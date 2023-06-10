@@ -42,7 +42,6 @@ class VkBot:
     def fuzzyСomparison(self, text): #нечеткое распознование
         for c in self._COMMANDS:
             vrt = fuzz.ratio(text.upper(), c.upper())
-            print(vrt)
             if vrt > 85:
                 return c
         return ""
