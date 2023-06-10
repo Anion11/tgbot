@@ -1,5 +1,6 @@
 # Импортируем библиотеки
-from datetime import datetime
+from datetime import datetime, timedelta
+from User import User
 from engine import VkBot
 from vk_api.longpoll import VkEventType
 #создаем экземпляр бота
@@ -11,8 +12,9 @@ for event in bot.longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
         # Если оно имеет метку для меня( то есть бота)
         if event.to_me:
+            user = User(event.user_id)
             print(" ")
             print(f"[log] Новое сообщение: {event.text}")
-            print(f"[log] Отправитель: {bot.getUserName(event)}")
-            print(f"[log] Дата: {datetime.utcfromtimestamp(bot.getTime()).strftime('%Y-%m-%d %H:%M:%S')}")
-            bot.newMessage(event)
+            print(f"[log] Отправитель: {user.getUserName()}")
+            print(f"[log] Дата: {(event.datetime + timedelta(hours=3)).strftime('%Y-%m-%d %H:%M:%S')}")
+            bot.newMessage(event.text, user.user_id)

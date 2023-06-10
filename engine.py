@@ -1,11 +1,11 @@
 from settings import *
 from fuzzywuzzy import fuzz
+from User import User
 class VkBot:
 
     def __init__(self):
         self.longpoll = longpoll
         self._COMMANDS = ["ПРИВЕТ", "ДАЙ ПОСТЫ", "ПОКА"]
-
     # Метод для отправки сообщения пользователю
     def writeMsg(self, user_id, message):
         vk.method('messages.send', {'user_id': user_id, 'message': message,"random_id":0})
@@ -17,16 +17,10 @@ class VkBot:
             liks.append(vk_session.method('likes.getList', {'type': 'post', 'owner_id': user_id, 'item_id': postObj['items'][i]['id']}))
         for i in range(0,len(postObj['items'])):
             self.writeMsg(user_id,'Пост с id - ' + str(postObj['items'][i]['id']) + " набрал " + str(liks[i]['count']))
-    def getTime(self):
-        return vk.method('utils.getServerTime')
-    def getUserName(self, event):
-            user = vk.method("users.get", {"user_ids": event.user_id}) 
-            return user[0]['first_name'] +  ' ' + user[0]['last_name']
     # Сообщение от пользователя
-    def newMessage(self, event):
+    def newMessage(self, text, user_id):
         try:
-            user_id = event.user_id
-            request = self.fuzzyСomparison(event.text)
+            request = self.fuzzyСomparison(text)
             if request.upper() == self._COMMANDS[0]:
                 self.writeMsg(user_id, "Хай")
             elif request.upper() == self._COMMANDS[2]:
@@ -45,4 +39,3 @@ class VkBot:
             if vrt > 85:
                 return c
         return ""
-        
