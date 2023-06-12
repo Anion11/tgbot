@@ -1,10 +1,11 @@
 # Импортируем библиотеки
-from datetime import datetime, timedelta
-from User import User
+from datetime import timedelta
+from Classes.User import User
 from engine import VkBot
 from vk_api.longpoll import VkEventType
 #создаем экземпляр бота
 bot = VkBot()
+
 print("[log] Бот запущен")
 # Основной цикл
 for event in bot.longpoll.listen():

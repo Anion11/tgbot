@@ -1,0 +1,9 @@
+vkBot
+Levinshtain
+fuzzy
+venv\Scripts\activate.bat
+venv\Scripts\Activate.ps1
+ Set-ExecutionPolicy RemoteSigned
+ [A] Для всех
+linx/Mac
+source venv/bin/activate

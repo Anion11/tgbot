@@ -1,11 +1,15 @@
 import vk_api
 from vk_api.longpoll import VkLongPoll
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 # Токен сообщества
-token = "vk1.a.gnP45oXmjfRQQ98cVi-O7CRwqlzv0QLwP6EEvaEwz9wy-C1OEhGlfJzqqo5msKA1YkDefbcBw3Bs1g2-q7VfA7tOGeDqRoXRGImPi27laWy3rJw6vbIAzOu9wW4-FCgz6z4AUWaBd1X-8iVZj-pCTJ-XXBaCDjawFt44YBdum2E6qZWJSC4DDnHgzGVriPnQzeQ4wkqYPc1YvcNyHf38RQ"
+token = os.environ.get('TOKEN')
 # Токен приложения
-service_token = "a9092088a9092088a909208813aa1d55ceaa909a9092088cd8d7883b0a838f114762c25"
+service_token = os.environ.get('SERVICE_TOKEN')
 # id приложения
-app_id = 51672390
+app_id = os.environ.get("APP_ID")
 # Авторизуемся как сообщество
 vk = vk_api.VkApi(token=token)
 # Авторизуемся как приложение
