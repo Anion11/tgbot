@@ -1,14 +1,12 @@
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from Classes.Post import Post
 from settings import *
-import requests
-from urllib.parse import urlparse
 
 class VkBot:
 
     def __init__(self):
         self.longpoll = longpoll
-        self._COMMANDS = ["Покажи посты"]
+        self._COMMANDS = ["Выведи посты", "Рассчитать статистику", "Работа с историями"]
         self._COLORS = [VkKeyboardColor.POSITIVE, VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY,
                         VkKeyboardColor.SECONDARY]
         self.keyboard = self.spawnKeyboard()

@@ -16,3 +16,5 @@ vk = vk_api.VkApi(token=token)
 vk_session = vk_api.VkApi(app_id=app_id, token=service_token)
 # Работа с сообщениями
 longpoll = VkLongPoll(vk)
+# Версия API
+version = 5.131
