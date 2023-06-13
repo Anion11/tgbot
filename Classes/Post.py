@@ -3,11 +3,14 @@ from settings import vk, vk_session
 class Post:
 
     def __init__(self, user_id):
-        self.postObj = vk_session.method('wall.get', {'owner_id': user_id, 'offset': 0, 'count': 5})
+        self.postObj = vk_session.method('wall.get', {'owner_id': user_id, 'offset': 0, 'count': 100})
         self.user_id = user_id
 
     def createPost(self,attachment):
         vk.method('messages.send', {'user_id': self.user_id, 'attachment': attachment, "random_id": 0})
+
+    def updatePostArr(self, offset):
+        self.postObj = vk_session.method('wall.get', {'owner_id': self.user_id, 'offset': offset, 'count': 100})
 
     # Метод для подсчета количества лайков под постами
     def checkPostsUser(self):

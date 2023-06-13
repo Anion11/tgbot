@@ -8,9 +8,12 @@ class Statistic:
         self.id_text = None
         self.token = service_token
         self.version = version
-        self.all_posts = Post(user_id).postObj
+        self.posts = Post(user_id)
+        self.all_posts = self.posts.postObj
         self.subs = User(user_id).getCountFollowers()
         self.user_id = user_id
+        self.strViewsStat = None
+        self.strDataStat = None
     # Возвращает массив, где выведенео количество упоминаний в посте
     def check_count_id(self):
         count_id = []
@@ -65,16 +68,27 @@ class Statistic:
         self.likes_comm_reposts = []
         self.id_date = []
         self.id_text = []
-        for i in range(len(self.all_posts["items"])):
-                    try:
-                        self.likes_views.append((self.all_posts["items"][i]['likes']['count'], self.all_posts["items"][i]['views']['count']))
-                    except:
-                        self.likes_views.append((self.all_posts["items"][i]['likes']['count'], 0))
-                    self.likes_comm_reposts.append((int(self.all_posts["items"][i]['id']), int(self.all_posts["items"][i]['likes']['count']),
-                                                    int(self.all_posts["items"][i]['comments']['count']),
-                                                    int(self.all_posts["items"][i]['reposts']['count'])))
-                    self.id_date.append([int(self.all_posts["items"][i]['id']), self.all_posts["items"][i]['date']])
+        offset = 0
+        ok = False
+        while offset < 500 and not ok:
+            if self.all_posts['items'] == [] or (offset > 0 and int(self.all_posts["items"][0]["id"]) == self.id_date[0][0]):
+                ok = True
+            for i in range(len(self.all_posts["items"])):
+                try:
+                    self.likes_views.append((self.all_posts["items"][i]['likes']['count'], self.all_posts["items"][i]['views']['count']))
+                except:
+                    self.likes_views.append((self.all_posts["items"][i]['likes']['count'], 0))
+                self.likes_views.append((self.all_posts["items"][i]['likes']['count'], 0))
+                self.likes_comm_reposts.append((int(self.all_posts["items"][i]['id']), int(self.all_posts["items"][i]['likes']['count']),
+                                                        int(self.all_posts["items"][i]['comments']['count']),
+                                                        int(self.all_posts["items"][i]['reposts']['count'])))
+                self.id_date.append([int(self.all_posts["items"][i]['id']), self.all_posts["items"][i]['date']])
+            offset+=100
+            print(self.id_date)
+            self.posts.updatePostArr(offset)
+            self.all_posts = self.posts.postObj
         rate_engagement = self.engagement_rate(self.likes_comm_reposts)
+
         if len(self.id_date) >= 4:
             for i in range(len(self.id_date) // 2 + 1):
                 delta_date_post = self.id_date[i][1] - self.id_date[i + 1][1]
@@ -83,6 +97,14 @@ class Statistic:
         reg_analys_views = self.regr_analys(self.likes_views)
         reg_analys_date_delta = self.regr_analys(last_post_time_likes_delta)
 
-        print("Зависимость вовлечённости от просмотров - ", reg_analys_views)
-        print("Зависимость вовлеченности от времени публикации между постами - ", reg_analys_date_delta)
-        return reg_analys_views, reg_analys_date_delta
+        self.strViewsStat = ("Зависимость вовлечённости от просмотров - \n" + str(reg_analys_views))
+        self.strDataStat = ("Зависимость вовлеченности от времени публикации между постами - \n" + str(reg_analys_date_delta))
+        if(reg_analys_views > 0.7):
+            self.strViewsStat += ".\nВовлеченность ваших подписчиков - хорошая"
+        else:
+            self.strViewsStat += ".\nВовлеченность ваших подписчиков - плохая"
+        if (reg_analys_date_delta > 0.7):
+            self.strDataStat += ".\nВы часто публикуете записи, ваши подписчики только рады)"
+        else:
+            self.strDataStat += ".\nОчень редко выставляете записи, я уже и сам не помню кто вы)"
+
