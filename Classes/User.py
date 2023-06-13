@@ -1,4 +1,4 @@
-from settings import vk
+from settings import vk, vk_session
 
 
 class User:
@@ -8,12 +8,12 @@ class User:
 
     def getUserName(self):
         return self.user[0]['first_name'] + ' ' + self.user[0]['last_name']
-
-    def getAveregeCountLikes():
+    def getAveregeCountLikes(self):
         pass
-
-    def getAveregeCountComments():
+    def getAveregeCountComments(self):
         pass
-
-    def getAveregeCountReposts():
+    def getAveregeCountReposts(self):
         pass
+    def getCountFollowers(self):
+        followers = vk_session.method('users.getFollowers', {'user_id': self.user_id, 'offset': 0})
+        return followers["count"]

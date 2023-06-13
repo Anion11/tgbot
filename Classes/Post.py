@@ -18,8 +18,14 @@ class Post:
         return attachmPosts
 
     def checkLikesUser(self):
-        liks = list()
+        likes = list()
         for i in range(0, len(self.postObj['items'])):
-            liks.append(vk_session.method('likes.getList',
+            likes.append(vk_session.method('likes.getList',
                                           {'type': 'post', 'owner_id': self.user_id, 'item_id': self.postObj['items'][i]['id']}))
-        return liks
+        return likes
+    def checkCommentsUser(self):
+        Comments = list()
+        for i in range(0, len(self.postObj['items'])):
+            Comments.append(vk_session.method('Comments.getList',
+                                          {'type': 'post', 'owner_id': self.user_id, 'item_id': self.postObj['items'][i]['id']}))
+        return Comments

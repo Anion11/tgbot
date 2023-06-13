@@ -1,17 +1,17 @@
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-
 from Classes.Post import Post
 from settings import *
-from fuzzywuzzy import fuzz
-
+import requests
+from urllib.parse import urlparse
 
 class VkBot:
 
     def __init__(self):
         self.longpoll = longpoll
-        self._COMMANDS = ["ПРИВЕТ", "ПОКА", "ДАЙ ПОСТЫ", "НАЧАТЬ"]
+        self._COMMANDS = ["Покажи посты"]
         self._COLORS = [VkKeyboardColor.POSITIVE, VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY,
                         VkKeyboardColor.SECONDARY]
+        self.keyboard = self.spawnKeyboard()
 
     # Метод для отправки сообщения пользователю
     def send_message(self, user_id, message, keyboard=None):
@@ -24,16 +24,11 @@ class VkBot:
             post["keyboard"] = keyboard.get_keyboard()
         vk.method("messages.send", post)
 
-    def spawnKeyboard(self, user_id):
+    def spawnKeyboard(self):
         keyboard = VkKeyboard()
-        for i in range(0, len(self._COMMANDS)//2):
+        for i in range(len(self._COMMANDS)):
             keyboard.add_button(label=self._COMMANDS[i], color=self._COLORS[i])
-            self.send_message(user_id, self._COMMANDS[i], keyboard)
-        keyboard.add_line()
-        for i in range(len(self._COMMANDS) // 2, len(self._COMMANDS)):
-            keyboard.add_button(label=self._COMMANDS[i], color=self._COLORS[i])
-            self.send_message(user_id, self._COMMANDS[i], keyboard)
-
+        return keyboard
 
     def postMsg(self, user_id):
         post = Post(user_id)
@@ -44,19 +39,11 @@ class VkBot:
             self.send_message(user_id, 'Пост набрал - ' + str(likes[i]['count']) + ' лайков')
 
     # Сообщение от пользователя
-    def newMessage(self, text, user_id):
-
+    def newMessage(self, request, user_id):
         try:
-            request = text
-            if request.upper() == self._COMMANDS[0]:
-                self.send_message(user_id, "Хай")
-            elif request.upper() == self._COMMANDS[1]:
-                self.send_message(user_id, "Пока((")
-            elif request.upper() == self._COMMANDS[2]:
-                self.send_message(user_id, "Подождите немного...")
-                self.postMsg(user_id)
-            elif request.upper() == self._COMMANDS[3]:
-                self.spawnKeyboard(user_id)
+            if request == self._COMMANDS[0]:
+                self.send_message(user_id, "Подождите немного...", self.keyboard)
+                self.postMsg(user_id)        
             else:
                 self.send_message(user_id, "Не понял вашего сообщения...")
             print('[log] 200: Успешно')
