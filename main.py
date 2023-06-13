@@ -3,7 +3,7 @@ from datetime import timedelta
 from Classes.User import User
 from engine import VkBot
 from vk_api.longpoll import VkEventType
-from Classes.class_logic import Logic
+from Classes.Statistic import Statistic
 #создаем экземпляр бота
 bot = VkBot()
 print("[log] Бот запущен")
@@ -14,8 +14,8 @@ for event in bot.longpoll.listen():
         # Если оно имеет метку для меня( то есть бота)
         if event.to_me:
             user = User(event.user_id)
-            logic = Logic(user.user_id)
-            print(logic.analyse_data())
+            stat = Statistic(user.user_id)
+            print(stat.analyse_data())
             print(" ")
             print(f"[log] Новое сообщение: {event.text}")
             print(f"[log] Отправитель: {user.getUserName()}")

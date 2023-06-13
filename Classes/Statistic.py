@@ -1,33 +1,16 @@
-import time
 import math
-import requests
 from settings import *
-from Post import Post
+from Classes.Post import Post
+from Classes.User import User
 
-class Logic:
+class Statistic:
     def __init__(self, user_id):
-        self.id_likes_type = None
         self.id_text = None
-        self.id_date = None
-        self.likes_comm_reposts = None
-        self.likes_views = None
-        self.x = None
         self.token = service_token
         self.version = version
-        self.all_posts = Post().postObj
+        self.all_posts = Post(user_id).postObj
+        self.subs = User(user_id).getCountFollowers()
         self.user_id = user_id
-
-    # Возвращает количество подписчиков
-    def get_count_subs(self):
-            response_subs = requests.get("https://api.vk.com/method/users.getFollowers",
-                                         params=
-                                         {"user_id": self.user_id,
-                                          "access_token": self.token,
-                                          "v": self.version
-                                          }
-                                         )
-            time.sleep(1)
-            return response_subs.json()['response']['count']
     # Возвращает массив, где выведенео количество упоминаний в посте
     def check_count_id(self):
         count_id = []
@@ -49,9 +32,8 @@ class Logic:
     # Возвращает массив с оценкой вовлечённости для каждого поста
     def engagement_rate(self, x):
         rate = []
-        subs = self.get_count_subs()
         for j in x:
-            rate.append([((j[1] + j[2] + j[3]) / int(subs))])
+            rate.append([((j[1] + j[2] + j[3]) / int(self.subs))])
         return rate
 
     # Вычисляет сумму массива по n элементу
@@ -78,27 +60,29 @@ class Logic:
 
     # Анализирует данные
     def analyse_data(self):
-
         last_post_time_likes_delta = []
-
+        self.likes_views = []
+        self.likes_comm_reposts = []
+        self.id_date = []
+        self.id_text = []
+        for i in range(len(self.all_posts["items"])):
+                    try:
+                        self.likes_views.append((self.all_posts["items"][i]['likes']['count'], self.all_posts["items"][i]['views']['count']))
+                    except:
+                        self.likes_views.append((self.all_posts["items"][i]['likes']['count'], 0))
+                    self.likes_comm_reposts.append((int(self.all_posts["items"][i]['id']), int(self.all_posts["items"][i]['likes']['count']),
+                                                    int(self.all_posts["items"][i]['comments']['count']),
+                                                    int(self.all_posts["items"][i]['reposts']['count'])))
+                    self.id_date.append([int(self.all_posts["items"][i]['id']), self.all_posts["items"][i]['date']])
         rate_engagement = self.engagement_rate(self.likes_comm_reposts)
-
-        count_id = self.check_count_id()
-        count_id_rate = []
-
-        for i in range(len(count_id)):
-            count_id_rate.append([count_id[i], rate_engagement[i][0]])
-
-        for i in range(len(self.id_date) // 2 + 1):
-            delta_date_post = self.id_date[i][1] - self.id_date[i + 1][1]
-            delta_rate_engagement_post = rate_engagement[i][0] - rate_engagement[i + 1][0]
-            last_post_time_likes_delta.append([delta_date_post, delta_rate_engagement_post])
-
-        regr_analys_id = self.regr_analys(count_id_rate)
+        if len(self.id_date) >= 4:
+            for i in range(len(self.id_date) // 2 + 1):
+                delta_date_post = self.id_date[i][1] - self.id_date[i + 1][1]
+                delta_rate_engagement_post = rate_engagement[i][0] - rate_engagement[i + 1][0]
+                last_post_time_likes_delta.append([delta_date_post, delta_rate_engagement_post])
         reg_analys_views = self.regr_analys(self.likes_views)
         reg_analys_date_delta = self.regr_analys(last_post_time_likes_delta)
 
         print("Зависимость вовлечённости от просмотров - ", reg_analys_views)
         print("Зависимость вовлеченности от времени публикации между постами - ", reg_analys_date_delta)
-        print("Зависимость вовлеченности от использованных отметок ", regr_analys_id)
-        return reg_analys_views, reg_analys_date_delta, regr_analys_id
+        return reg_analys_views, reg_analys_date_delta

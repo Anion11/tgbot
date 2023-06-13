@@ -1,6 +1,5 @@
 from settings import vk, vk_session
 
-
 class Post:
 
     def __init__(self, user_id):
