@@ -53,7 +53,7 @@ class VkBot:
                 self.send_message(user_id, "Не понял вашего сообщения...")
             print('[log] 200: Успешно')
         except Exception as e:
-            print(e)
+            print(f"[log] {e}")
             self.send_message(user_id, "Что то пошло не так...")
             self.send_message(user_id,
                               "Проверьте настройки приватности:\n1. Перейдите в раздел прочее\n2. Измените пункт "

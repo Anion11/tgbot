@@ -84,7 +84,6 @@ class Statistic:
                                                         int(self.all_posts["items"][i]['reposts']['count'])))
                 self.id_date.append([int(self.all_posts["items"][i]['id']), self.all_posts["items"][i]['date']])
             offset+=100
-            print(self.id_date)
             self.posts.updatePostArr(offset)
             self.all_posts = self.posts.postObj
         rate_engagement = self.engagement_rate(self.likes_comm_reposts)
@@ -97,8 +96,8 @@ class Statistic:
         reg_analys_views = self.regr_analys(self.likes_views)
         reg_analys_date_delta = self.regr_analys(last_post_time_likes_delta)
 
-        self.strViewsStat = ("Зависимость вовлечённости от просмотров - \n" + str(reg_analys_views))
-        self.strDataStat = ("Зависимость вовлеченности от времени публикации между постами - \n" + str(reg_analys_date_delta))
+        self.strViewsStat = ("Зависимость вовлечённости от просмотров = \n" + str(reg_analys_views))
+        self.strDataStat = ("Зависимость вовлеченности от времени публикации между постами = \n" + str(reg_analys_date_delta))
         if(reg_analys_views > 0.7):
             self.strViewsStat += ".\nВовлеченность ваших подписчиков - хорошая"
         else:
