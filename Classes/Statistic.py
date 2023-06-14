@@ -65,11 +65,13 @@ class Statistic:
         self.likes_comm_reposts = []
         self.id_date = []
         self.id_text = []
+        temp = 0
         for i in range(len(self.all_posts["items"])):
                     try:
                         self.likes_views.append((self.all_posts["items"][i]['likes']['count'], self.all_posts["items"][i]['views']['count']))
+                        temp = self.all_posts["items"][i]['views']['count']
                     except:
-                        self.likes_views.append((self.all_posts["items"][i]['likes']['count'], 0))
+                        self.likes_views.append((self.all_posts["items"][i]['likes']['count'], temp))
                     self.likes_comm_reposts.append((int(self.all_posts["items"][i]['id']), int(self.all_posts["items"][i]['likes']['count']),
                                                     int(self.all_posts["items"][i]['comments']['count']),
                                                     int(self.all_posts["items"][i]['reposts']['count'])))
@@ -82,7 +84,6 @@ class Statistic:
                 last_post_time_likes_delta.append([delta_date_post, delta_rate_engagement_post])
         reg_analys_views = self.regr_analys(self.likes_views)
         reg_analys_date_delta = self.regr_analys(last_post_time_likes_delta)
-
-        print("Зависимость вовлечённости от просмотров - ", reg_analys_views)
-        print("Зависимость вовлеченности от времени публикации между постами - ", reg_analys_date_delta)
+        print("[log] Зависимость вовлечённости от просмотров = ", reg_analys_views)
+        print("[log] Зависимость вовлеченности от времени публикации между постами = ", reg_analys_date_delta)
         return reg_analys_views, reg_analys_date_delta
