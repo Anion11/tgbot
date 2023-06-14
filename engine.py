@@ -1,5 +1,6 @@
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from Classes.Post import Post
+from Classes.Statistic import Statistic
 from settings import *
 
 class VkBot:
@@ -41,7 +42,13 @@ class VkBot:
         try:
             if request == self._COMMANDS[0]:
                 self.send_message(user_id, "Подождите немного...", self.keyboard)
-                self.postMsg(user_id)        
+                self.postMsg(user_id)
+            elif request == self._COMMANDS[1]:
+                stat = Statistic(user_id)
+                stat.analyse_data()
+                self.send_message(user_id, "Подождите немного....", self.keyboard)
+                self.send_message(user_id, stat.strViewsStat)
+                self.send_message(user_id, stat.strDataStat)
             else:
                 self.send_message(user_id, "Не понял вашего сообщения...")
             print('[log] 200: Успешно')
