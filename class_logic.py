@@ -40,6 +40,7 @@ class Logic:
     # Возвращает количество подписчиков
     def get_count_subs(self):
         subs_type = self.get_id()
+        sub = 0
         try:
             if subs_type[0] == 'group':
                 response_subs = requests.get("https://api.vk.com/method/groups.getMembers",
@@ -73,7 +74,7 @@ class Logic:
                                                )
                 time.sleep(1)
                 friend = response_friend.json()['response']['count']
-                subs = sub = friend
+                subs = sub + friend
                 return subs
         except:
             print("Ошибка чтения кол-ва подписчиков\n Укажите число ваших подписчиков:")
@@ -141,7 +142,7 @@ class Logic:
                 if x[i]['attachments']:
                     print("SORTED - ", i, x[i]['attachments'][0]['type'], x[i]['id'])
                 else:
-                    print(x[i]['id'], x[i])
+                    print(x[i]['id']," - NOT SORTED")
         if len(x) == 0:
             return 'Постов по выбранной дате не найдено'
         print("end work sort_posts")
