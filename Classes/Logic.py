@@ -1,12 +1,14 @@
 import datetime
 import time
-import data_analys
+# import DataGraph
 import math
 import requests
 
+from settings import *
+
 
 class Logic:
-    def __init__(self, token, version, domain, date):
+    def __init__(self, domain, date):
         self.__id_type = []
         self.__delta_date_post = []
         self.__id_text = []
@@ -14,8 +16,6 @@ class Logic:
         self.__likes_comm_reposts = []
         self.__likes_views = []
         self.__best_choice = []
-        self.__token = token
-        self.__version = version
         self.__domain = domain
         self.__all_posts = []
         self.__photos_all = []
@@ -25,15 +25,8 @@ class Logic:
 
     # Получение id пользователя
     def get_id(self):
-        response_subs = requests.get("https://api.vk.com/method/utils.resolveScreenName",
-                                     params=
-                                     {
-                                         "screen_name": self.__domain,
-                                         "access_token": self.__token,
-                                         "v": self.__version
-                                     }
-                                     )
-        options = [response_subs.json()['response']['type'], response_subs.json()['response']['object_id']]
+        response_subs = vk_session.method("utils.resolveScreenName",{ "screen_name": self.__domain})
+        options = [response_subs['type'], response_subs['object_id']]
         time.sleep(1)
         return options
 
@@ -43,37 +36,18 @@ class Logic:
         sub = 0
         try:
             if subs_type[0] == 'group':
-                response_subs = requests.get("https://api.vk.com/method/groups.getMembers",
-                                             params=
-                                             {"group_id": subs_type[1],
-                                              "access_token": self.__token,
-                                              "v": self.__version
-                                              }
-                                             )
+                response_subs = vk_session.method("groups.getMembers",{"group_id": subs_type[1]})
                 time.sleep(1)
-                return response_subs.json()['response']['count']
+                return response_subs['count']
             if subs_type[0] == 'user':
-                response_subs = requests.get("https://api.vk.com/method/users.getFollowers",
-                                             params=
-                                             {"user_id": subs_type[1],
-                                              "access_token": self.__token,
-                                              "v": self.__version
-                                              }
-                                             )
+                response_subs = vk_session.method("users.getFollowers",{"user_id": subs_type[1]})
                 time.sleep(1)
                 if response_subs is not None:
-                    sub = response_subs.json()['response']['count']
+                    sub = response_subs['count']
 
-                response_friend = requests.get("https://api.vk.com/method/friends.get",
-                                               params=
-                                               {"user_id": subs_type[1],
-                                                "fields": self.__domain,
-                                                "access_token": self.__token,
-                                                "v": self.__version
-                                                }
-                                               )
+                response_friend = vk_session.method("friends.get",{"user_id": subs_type[1],"fields": self.__domain})
                 time.sleep(1)
-                friend = response_friend.json()['response']['count']
+                friend = response_friend['count']
                 subs = sub + friend
                 return subs
         except:
@@ -97,18 +71,8 @@ class Logic:
         count = 500
         count_post = 0
         while offset < 1000:
-            response = requests.get("https://api.vk.com/method/wall.get",
-                                    params=
-                                    {
-                                        "access_token": self.__token,
-                                        "v": self.__version,
-                                        "domain": self.__domain,
-                                        "count": count,
-                                        "offset": offset
-                                    }
-                                    )
-            data = response.json()['response']['items']
-            count_post = response.json()['response']['count']
+            response = vk_session.method("wall.get",{"domain": self.__domain,"count": count, "offset": offset})
+            data = response['items']
             if len(data) == 0:
                 break
             count_post += len(data)
@@ -122,27 +86,31 @@ class Logic:
         return self.__all_posts
 
     def __user_date_convert_to_unix(self,date):
-        date = datetime.datetime.strptime(date, '%d.%m.%Y')
+        date = datetime.datetime.strptime(date, '%d/%m/%Y')
         self.__user_date = date.timestamp()
 
     # Получает данные о постах
     def __sort_post(self, x):
         for i in range(len(x)):
-            if x[i]['date'] > self.__user_date:
-                if x[i]['from_id'] * -1 == self.get_id()[1] and 'copy_history' not in x[i]:
-                    item = [x[i]['likes']['count'], x[i]['views']['count'], x[i]['comments']['count'],
-                            x[i]['reposts']['count'], x[i]['id'], x[i]['attachments'][0]['type'], x[i]['date'],
-                            x[i]['text']]
-                    self.__likes_views.append([item[0], item[1]])
-                    self.__likes_comm_reposts.append([int(item[4]), int(item[0]), int(item[2]), int(item[3])])
-                    self.__id_date.append([item[4], item[6]])
-                    self.__id_text.append([item[4], item[7]])
-                    self.__id_type.append([item[4], item[5], item[6]])
+            try:
+                if x[i]['date'] > self.__user_date:
+                    if x[i]['from_id'] == self.get_id()[1] and 'copy_history' not in x[i]:
+                        item = [x[i]['likes']['count'], x[i]['views']['count'], x[i]['comments']['count'],
+                                x[i]['reposts']['count'], x[i]['id'], x[i]['attachments'][0]['type'], x[i]['date'],
+                                x[i]['text']]
+                        print(item)
+                        self.__likes_views.append([item[0], item[1]])
+                        self.__likes_comm_reposts.append([int(item[4]), int(item[0]), int(item[2]), int(item[3])])
+                        self.__id_date.append([item[4], item[6]])
+                        self.__id_text.append([item[4], item[7]])
+                        self.__id_type.append([item[4], item[5], item[6]])
 
-                if x[i]['attachments']:
-                    print("SORTED - ", i, x[i]['attachments'][0]['type'], x[i]['id'])
-                else:
-                    print(x[i]['id']," - NOT SORTED")
+                    if x[i]['attachments']:
+                        print("SORTED - ", i, x[i]['attachments'][0]['type'], x[i]['id'])
+                    else:
+                        print(x[i]['id']," - NOT SORTED")
+            except:
+                break
         if len(x) == 0:
             return 'Постов по выбранной дате не найдено'
         print("end work sort_posts")
@@ -217,7 +185,7 @@ class Logic:
         index_max_stat_time_photo = 0
         index_max_stat_time_video = 0
         # create graph
-        data_analys.graph_data_eng_type(self.__photos_all, self.__videos_all)
+       # data_analys.graph_data_eng_type(self.__photos_all, self.__videos_all)
         matrix_time = []
         max_ph = 0
         max_vid = 0
@@ -318,16 +286,17 @@ class Logic:
         if sum(count_id_rate) > 0:
             for i in range(len(count_id)):
                 count_id_rate.append([count_id[i], rate_engagement[i][0]])
-        for i in range(len(self.__id_date) // 2 + 1):
-            self.__delta_date_post = self.__id_date[i][1] - self.__id_date[i + 1][1]
-            delta_rate_engagement_post = rate_engagement[i][0] - rate_engagement[i + 1][0]
-            last_post_time_likes_delta.append([self.__delta_date_post, delta_rate_engagement_post])
+        for i in range(len(self.__id_date) // 2 - 1):
+                self.__delta_date_post = self.__id_date[i][1] - self.__id_date[i + 1][1]
+                delta_rate_engagement_post = rate_engagement[i][0] - rate_engagement[i + 1][0]
+                last_post_time_likes_delta.append([self.__delta_date_post, delta_rate_engagement_post])
+        reg_analys_date_delta = self.__regr_analys(last_post_time_likes_delta)
         if sum(count_id_rate) > 0:
             regr_analys_id = self.__regr_analys(count_id_rate)
         else:
             regr_analys_id = 0
         reg_analys_views = self.__regr_analys(self.__likes_views)
-        reg_analys_date_delta = self.__regr_analys(last_post_time_likes_delta)
+
         time_ph, time_vid = self.__optimal_time_post()
         return reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid
 
