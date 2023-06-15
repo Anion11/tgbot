@@ -111,8 +111,8 @@ class Logic:
                         print(x[i]['id']," - NOT SORTED")
             except:
                 break
-        if len(x) == 0:
-            return 'Постов по выбранной дате не найдено'
+        if len(self.__id_date) <= 1:
+            return -1
         print("end work sort_posts")
         self.rate = self.__engagement_rate()
 
@@ -274,8 +274,9 @@ class Logic:
     # Анализирует данные
     def analyse_data(self):
 
-        self.__sort_post(self.__get_posts())
-
+        x = self.__sort_post(self.__get_posts())
+        if(x == -1):
+            return  -1
         last_post_time_likes_delta = []
 
         rate_engagement = self.rate
@@ -301,7 +302,10 @@ class Logic:
         return reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid
 
     def print_analyse(self):
-        reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid = self.analyse_data()
+        if(self.analyse_data() != -1):
+            reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid = self.analyse_data()
+        else:
+            return
         print("Зависимость вовлечённости от просмотров - ", round(reg_analys_views, 2))
         print("Зависимость вовлеченности от времени публикации между постами - ", reg_analys_date_delta)
         print("Зависимость вовлеченности от использованных отметок ", regr_analys_id)

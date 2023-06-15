@@ -54,7 +54,6 @@ class VkBot:
             elif request == self._COMMANDS[1]:
                 self.send_message(self.user_id, "Введите дату в формате 01.01.2000")
             elif re.fullmatch(self.pattern, request):
-                post = Post(self.user_id)
                 stat = Logic(self.user.user_domain, request)
                 stat.print_analyse()
             else:

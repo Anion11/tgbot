@@ -4,6 +4,7 @@ class Post:
 
     def __init__(self, user_id):
         self.postObj = vk_session.method('wall.get', {'owner_id': user_id, 'offset': 0, 'count': 100})
+        self.post_count = self.postObj['count']
         self.user_id = user_id
 
     def createPost(self,attachment):
