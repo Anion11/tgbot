@@ -23,24 +23,17 @@ class Logic:
         response_subs = vk_session.method("utils.resolveScreenName",{ "screen_name": self.__domain})
         options = [response_subs['type'], response_subs['object_id']]
         return options
-
     # Возвращает количество подписчиков
     def get_count_subs(self):
         subs_type = self.get_id()
-        sub = 0
         try:
             if subs_type[0] == 'group':
                 response_subs = vk_session.method("groups.getMembers",{"group_id": subs_type[1]})
-                return response_subs['count']
+                return Utils.get_count_subs_group(subs_type, response_subs)
             if subs_type[0] == 'user':
                 response_subs = vk_session.method("users.getFollowers",{"user_id": subs_type[1]})
-                if response_subs is not None:
-                    sub = response_subs['count']
-
                 response_friend = vk_session.method("friends.get",{"user_id": subs_type[1],"fields": self.__domain})
-                friend = response_friend['count']
-                subs = sub + friend
-                return subs
+                return Utils.get_count_subs_user(subs_type, response_subs, response_friend)
         except:
             print("Ошибка чтения кол-ва подписчиков\n Укажите число ваших подписчиков:")
             subs = int(input())
@@ -219,11 +212,10 @@ class Logic:
         x = self.__likes_comm_reposts
         rate = []
         subs = self.get_count_subs()
+        print(subs)
         for j in x:
             rate.append([((j[1] + j[2] + j[3]) / int(subs))])
         return rate
-    def test(self):
-        self.print_analyse()
 
     # Анализирует данные
     def analyse_data(self):
@@ -271,4 +263,3 @@ class Logic:
             print("Лучшее время для поста видео:"    , str(time_vid[1])[0:2] + ':00 - ' +str(time_vid[1])[2:4] + ':00')
         else:
             print("Видеороликов за выбранный период не найдено, советую разнообразить свой контент и добавить их!")
-
