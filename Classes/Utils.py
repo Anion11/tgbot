@@ -1,3 +1,4 @@
+import datetime
 import math
 
 class Utils:
@@ -30,3 +31,9 @@ class Utils:
     def regr_analys(self, x):
         r = self.cov(self, x) / (self.std([xi[1] for xi in x]) * self.std([yi[0] for yi in x]))
         return r
+    
+    def user_date_convert_to_unix(date):
+        date = date.replace(".", "/")
+        date = date.replace("-", "/")
+        date = datetime.datetime.strptime(date, '%d/%m/%Y')
+        return date.timestamp()

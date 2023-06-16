@@ -4,7 +4,7 @@ from Classes.User import User
 from engine import VkBot
 from vk_api.longpoll import VkEventType
 
-#создаем экземпляр бота
+#создаем экземпляр ботаs
 bot = VkBot()
 print("[log] Бот запущен")
 # Основной цикл
@@ -17,6 +17,7 @@ for event in bot.longpoll.listen():
             user = User(event.user_id)
             print(" ")
             print(f"[log] Новое сообщение: {event.text}")
+            print(f"[log] Domain: {bot.user.user_domain}")
             print(f"[log] Отправитель: {user.getUserName()}")
             print(f"[log] Дата: {(event.datetime + timedelta(hours=3)).strftime('%Y-%m-%d %H:%M:%S')}")
             bot.newMessage(event.text)

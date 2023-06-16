@@ -15,7 +15,8 @@ class VkBot:
         self.keyboard = self.spawnKeyboard()
         self.user_id = None
         self.user = None
-        self.pattern = re.compile("^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$")
+        self.dateTimePattern = [re.compile("^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$"), re.compile("^[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{4}$"),
+                        re.compile("^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}$")]
 
     # Метод для отправки сообщения пользователю
     def send_message(self, user_id, message, keyboard=None):
@@ -52,8 +53,9 @@ class VkBot:
                 self.send_message(self.user_id, "Подождите немного...", self.keyboard)
                 self.postMsg(self.user_id)
             elif request == self._COMMANDS[1]:
-                self.send_message(self.user_id, "Введите дату в формате 01.01.2000")
-            elif re.fullmatch(self.pattern, request):
+                self.send_message(self.user_id, "Введите дату в формате дд.мм.гггг")
+            elif (re.fullmatch(self.dateTimePattern[0], request) or re.fullmatch(self.dateTimePattern[1], request)
+                   or re.fullmatch(self.dateTimePattern[2], request)):
                 stat = Logic(self.user.user_domain, request)
                 stat.print_analyse()
             else:
