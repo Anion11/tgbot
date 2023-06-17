@@ -252,7 +252,7 @@ class Logic:
         if(x != -1):
             reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid = x
         else:
-            return
+            return -1
         self.strVovlViews = "Зависимость вовлечённости от просмотров - " + str(round(reg_analys_views, 2))
         self.strVovlDate = "Зависимость вовлеченности от времени публикации между постами - " + str(reg_analys_date_delta)
         self.strVovlOtm = "Зависимость вовлеченности от использованных отметок " + str(regr_analys_id)

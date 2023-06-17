@@ -11,10 +11,11 @@ class VkBot:
 
     def __init__(self):
         self.longpoll = longpoll
-        self._COMMANDS = ["Выведи посты", "Рассчитать статистику","Внести группу" , "https://vk.com/"]
+        self._COMMANDS_USER = ["Рассчитать статистику страницы", "Вывести посты с статистикой", "Работа с группой"]
+        self._COMMANDS_GROUP = ["Рассчитать статистику группы", "Выведи посты с статистикой", "Работа с моей страницей", "https://vk.com/"]
         self._COLORS = [VkKeyboardColor.POSITIVE, VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY,
                         VkKeyboardColor.SECONDARY]
-        self.keyboard = self.spawnKeyboard()
+        self.keyboard = self.spawnKeyboardUser()
         self.groups = Groups()
         self.user_id = None
         self.user = None
@@ -35,10 +36,15 @@ class VkBot:
     def setUserId(self, user_id):
         self.user_id = user_id
         self.user = User(user_id)
-    def spawnKeyboard(self):
+    def spawnKeyboardUser(self):
         keyboard = VkKeyboard()
-        for i in range(len(self._COMMANDS) - 1):
-            keyboard.add_button(label=self._COMMANDS[i], color=self._COLORS[i])
+        for i in range(len(self._COMMANDS_USER)):
+            keyboard.add_button(label=self._COMMANDS_USER[i], color=self._COLORS[i])
+        return keyboard
+    def spawnKeyboardGroup(self):
+        keyboard = VkKeyboard()
+        for i in range(len(self._COMMANDS_GROUP) - 1):
+            keyboard.add_button(label=self._COMMANDS_GROUP[i], color=self._COLORS[i])
         return keyboard
 
     def postMsg(self, user):
@@ -53,40 +59,52 @@ class VkBot:
     # Сообщение от пользователя
     def newMessage(self, request):
         try:
-            if request == self._COMMANDS[0]:
+            if request == self._COMMANDS_USER[1]:
                 self.send_message(self.user_id, "Подождите немного...", self.keyboard)
+                self.postMsg(self.user_id)
+            elif request == self._COMMANDS_GROUP[1]:
                 if (self.groups.have_domain):
+                    self.send_message(self.user_id, "Подождите немного...", self.keyboard)
                     self.postMsg(self.groups.group_id)
                 else:
-                    self.postMsg(self.user_id)
-            elif request == self._COMMANDS[1]:
-                self.send_message(self.user_id, "Введите дату в формате дд.мм.гггг")
+                    self.send_message(self.user_id, "Пришлите ссылку на вашу группу", self.keyboard)
+            elif request == self._COMMANDS_USER[0] or request == self._COMMANDS_GROUP[0]:
+                self.send_message(self.user_id, "Введите начальную дату рассчета в формате дд.мм.гггг")
             elif (re.fullmatch(self.dateTimePattern[0], request) or re.fullmatch(self.dateTimePattern[1], request)
                    or re.fullmatch(self.dateTimePattern[2], request)):
+                self.send_message(self.user_id, "Подождите немного...", self.keyboard)
                 if (self.groups.have_domain):
                     stat = Logic(self.groups.domain, request)
-                    stat.print_analyse()
-                    self.send_message(self.user_id, stat.strVovlDate)
-                    self.send_message(self.user_id, stat.strVovlOtm)
-                    self.send_message(self.user_id, stat.strVovlViews)
-                    self.send_message(self.user_id, stat.timeToVideo)
-                    self.send_message(self.user_id, stat.timeToPhoto)
+                    x = stat.print_analyse()
+                    if x != -1:
+                        self.send_message(self.user_id, stat.strVovlDate)
+                        self.send_message(self.user_id, stat.strVovlOtm)
+                        self.send_message(self.user_id, stat.strVovlViews)
+                        self.send_message(self.user_id, stat.timeToVideo)
+                        self.send_message(self.user_id, stat.timeToPhoto)
+                    else:
+                        self.send_message(self.user_id, "Слишком мало постов, невозможно рассчитать статистику")
                 else:
                     stat = Logic(self.user.user_domain, request)
+                    stat.print_analyse()
                     self.send_message(self.user_id, stat.strVovlDate)
                     self.send_message(self.user_id, stat.strVovlOtm)
                     self.send_message(self.user_id, stat.strVovlViews)
                     self.send_message(self.user_id, stat.timeToVideo)
                     self.send_message(self.user_id, stat.timeToPhoto)
-                    stat.print_analyse()
-            elif request == self._COMMANDS[2]:
+            elif request == self._COMMANDS_USER[2]:
+                self.keyboard = self.spawnKeyboardGroup()
+                self.send_message(self.user_id, "Вы перешли на режим работы с группой", self.keyboard)
                 self.send_message(self.user_id, "Пришлите ссылку на вашу группу", self.keyboard)
-            elif self._COMMANDS[3] in request:
-                domain = request.partition(self._COMMANDS[3])[2]
+            elif request == self._COMMANDS_GROUP[2]:
+                self.keyboard = self.spawnKeyboardUser()
+                self.send_message(self.user_id, "Вы перешли на режим работы со своей стринцей", self.keyboard)
+            elif self._COMMANDS_GROUP[3] in request:
+                domain = request.partition(self._COMMANDS_GROUP[3])[2]
                 self.groups.initDomain(domain)
                 self.send_message(self.user_id, "Группа сохранена")
             else:
-                self.send_message(self.user_id, "Не понял вашего сообщения... Повторите попытку")
+                self.send_message(self.user_id, "Не поняла вашего сообщения... Повторите попытку")
             print('[log] 200: Успешно')
         except Exception as e:
             print(f"[log] {e}")

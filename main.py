@@ -4,8 +4,8 @@ from Classes.User import User
 from engine import VkBot
 from vk_api.longpoll import VkEventType
 
-#создаем экземпляр ботаs
 bot = VkBot()
+#создаем экземпляр ботаs
 print("[log] Бот запущен")
 # Основной цикл
 for event in bot.longpoll.listen():
@@ -13,6 +13,7 @@ for event in bot.longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
         # Если оно имеет метку для меня( то есть бота)
         if event.to_me:
+
             bot.setUserId(event.user_id)
             user = User(event.user_id)
             print(" ")
