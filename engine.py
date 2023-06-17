@@ -1,8 +1,7 @@
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-
 from Classes.Groups import Groups
 from Classes.Post import Post
-from Classes.Logic import Logic
+from Classes.Statistic import Statistic
 from Classes.User import User
 from settings import *
 import re
@@ -11,8 +10,8 @@ class VkBot:
 
     def __init__(self):
         self.longpoll = longpoll
-        self._COMMANDS_USER = ["Рассчитать статистику страницы", "Вывести посты с статистикой", "Работа с группой"]
-        self._COMMANDS_GROUP = ["Рассчитать статистику группы", "Выведи посты с статистикой", "Работа с моей страницей", "https://vk.com/"]
+        self._COMMANDS_USER = ["Рассчитать статистику страницы", "Вывести посты со статистикой страницы", "Работа с группой"]
+        self._COMMANDS_GROUP = ["Рассчитать статистику группы", "Вывести посты со статистикой группы", "Работа с моей страницей", "https://vk.com/"]
         self._COLORS = [VkKeyboardColor.POSITIVE, VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY,
                         VkKeyboardColor.SECONDARY]
         self.keyboard = self.spawnKeyboardUser()
@@ -54,8 +53,16 @@ class VkBot:
         for i in range(0, len(attachment)):
             post.createPost(attachment[i],self.user_id)
             self.send_message(self.user_id, 'Пост набрал - ' + str(likes[i]['count']) + ' лайков')
-
-
+    def allAnalys(self, stat):
+        result = stat.print_analyse()
+        if result != -1:
+            self.send_message(self.user_id, stat.strVovlDate)
+            self.send_message(self.user_id, stat.strVovlOtm)
+            self.send_message(self.user_id, stat.strVovlViews)
+            self.send_message(self.user_id, stat.timeToVideo)
+            self.send_message(self.user_id, stat.timeToPhoto)
+        else:
+            self.send_message(self.user_id, "Слишком мало постов, невозможно рассчитать статистику")
     # Сообщение от пользователя
     def newMessage(self, request):
         try:
@@ -74,31 +81,19 @@ class VkBot:
                    or re.fullmatch(self.dateTimePattern[2], request)):
                 self.send_message(self.user_id, "Подождите немного...", self.keyboard)
                 if (self.groups.have_domain):
-                    stat = Logic(self.groups.domain, request)
-                    x = stat.print_analyse()
-                    if x != -1:
-                        self.send_message(self.user_id, stat.strVovlDate)
-                        self.send_message(self.user_id, stat.strVovlOtm)
-                        self.send_message(self.user_id, stat.strVovlViews)
-                        self.send_message(self.user_id, stat.timeToVideo)
-                        self.send_message(self.user_id, stat.timeToPhoto)
-                    else:
-                        self.send_message(self.user_id, "Слишком мало постов, невозможно рассчитать статистику")
+                    stat = Statistic(self.groups.domain, request)
+                    self.allAnalys(stat)
                 else:
-                    stat = Logic(self.user.user_domain, request)
-                    stat.print_analyse()
-                    self.send_message(self.user_id, stat.strVovlDate)
-                    self.send_message(self.user_id, stat.strVovlOtm)
-                    self.send_message(self.user_id, stat.strVovlViews)
-                    self.send_message(self.user_id, stat.timeToVideo)
-                    self.send_message(self.user_id, stat.timeToPhoto)
+                    stat = Statistic(self.user.user_domain, request)
+                    self.allAnalys(stat)
             elif request == self._COMMANDS_USER[2]:
                 self.keyboard = self.spawnKeyboardGroup()
                 self.send_message(self.user_id, "Вы перешли на режим работы с группой", self.keyboard)
                 self.send_message(self.user_id, "Пришлите ссылку на вашу группу", self.keyboard)
             elif request == self._COMMANDS_GROUP[2]:
                 self.keyboard = self.spawnKeyboardUser()
-                self.send_message(self.user_id, "Вы перешли на режим работы со своей стринцей", self.keyboard)
+                self.send_message(self.user_id, "Вы перешли на режим работы со своей страницей", self.keyboard)
+
             elif self._COMMANDS_GROUP[3] in request:
                 domain = request.partition(self._COMMANDS_GROUP[3])[2]
                 self.groups.initDomain(domain)

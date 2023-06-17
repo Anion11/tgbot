@@ -3,7 +3,7 @@ import datetime
 from settings import *
 from Classes.Utils import *
 
-class Logic:
+class Statistic:
     def __init__(self, domain, date):
         self.__id_type = []
         self.__delta_date_post = []
@@ -56,13 +56,12 @@ class Logic:
         offset = 0
         count = 500
         count_post = 0
-        while offset < 1000:
+        while offset < 500:
             response = vk_session.method("wall.get",{"domain": self.__domain,"count": count, "offset": offset})
             data = response['items']
             if len(data) == 0:
                 break
             count_post += len(data)
-            print('UPLOAD_POST=', count_post)
             offset += 100
             self.__all_posts.extend(data)
         
@@ -71,7 +70,6 @@ class Logic:
 
     # Получает данные о постах
     def __sort_post(self, x):
-        print(str(x[0]['from_id']) + " : " + str(self.get_id()[1]))
         for i in range(len(x)):
             try:
                 if x[i]['date'] > self.__user_date:
@@ -79,22 +77,15 @@ class Logic:
                         item = [x[i]['likes']['count'], x[i]['views']['count'], x[i]['comments']['count'],
                                 x[i]['reposts']['count'], x[i]['id'], x[i]['attachments'][0]['type'], x[i]['date'],
                                 x[i]['text']]
-                        print(item)
                         self.__likes_views.append([item[0], item[1]])
                         self.__likes_comm_reposts.append([int(item[4]), int(item[0]), int(item[2]), int(item[3])])
                         self.__id_date.append([item[4], item[6]])
                         self.__id_text.append([item[4], item[7]])
                         self.__id_type.append([item[4], item[5], item[6]])
-
-                    if x[i]['attachments']:
-                        print("SORTED - ", i, x[i]['attachments'][0]['type'], x[i]['id'])
-                    else:
-                        print(x[i]['id']," - NOT SORTED")
             except:
                 break
         if len(self.__id_date) <= 1:
             return -1
-        print("end work sort_posts")
         self.rate = self.__engagement_rate()
 
     def __optimal_time_post(self):
@@ -243,7 +234,6 @@ class Logic:
 
     def print_analyse(self):
         x = self.analyse_data()
-        print(x)
         if(x != -1):
             reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid = x
         else:
