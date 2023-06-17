@@ -3,7 +3,7 @@ import math
 
 class Utils:
     # Вычисление стандартного отклонения
-    def std(x):
+    def std(self,x):
         std_result = 0
         mean = sum(x) / len(x)
         for a in x:
@@ -11,7 +11,7 @@ class Utils:
         return math.sqrt(std_result)
 
     # Вычисляет сумму массива по n элементу
-    def summ(x, n):
+    def summ(self, x, n):
         summ_m = 0
         for i in x:
             summ_m += i[n]
@@ -29,7 +29,7 @@ class Utils:
 
     # Вычисляет значение коэфициента регрессионного анализа
     def regr_analys(self, x):
-        r = self.cov(self, x) / (self.std([xi[1] for xi in x]) * self.std([yi[0] for yi in x]))
+        r = self.cov(x) / (self.std([xi[1] for xi in x]) * self.std([yi[0] for yi in x]))
         return r
     
     def user_date_convert_to_unix(date):

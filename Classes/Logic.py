@@ -17,25 +17,32 @@ class Logic:
         self.__photos_all = []
         self.__videos_all = []
         self.__enter_date = date
+        self.strVovlViews = None
+        self.strVovlDate = None
+        self.strVovlOtm = None
+        self.timeToPhoto = None
+        self.timeToVideo = None
 
-    # Получение id пользователя
+        # Получение id пользователя
     def get_id(self):
         response_subs = vk_session.method("utils.resolveScreenName",{ "screen_name": self.__domain})
         options = [response_subs['type'], response_subs['object_id']]
+        if(response_subs['type'] == 'group'):
+            options[1] *= -1
         return options
     # Возвращает количество подписчиков
     def get_count_subs(self):
         subs_type = self.get_id()
         try:
             if subs_type[0] == 'group':
-                response_subs = vk_session.method("groups.getMembers",{"group_id": subs_type[1]})
+                response_subs = vk_session.method("groups.getMembers",{"group_id": -1 * subs_type[1]})
                 return Utils.get_count_subs_group(subs_type, response_subs)
             if subs_type[0] == 'user':
                 response_subs = vk_session.method("users.getFollowers",{"user_id": subs_type[1]})
                 response_friend = vk_session.method("friends.get",{"user_id": subs_type[1],"fields": self.__domain})
                 return Utils.get_count_subs_user(subs_type, response_subs, response_friend)
-        except:
-            print("Ошибка чтения кол-ва подписчиков\n Укажите число ваших подписчиков:")
+        except Exception as e:
+            print(e)
             subs = int(input())
             return subs
 
@@ -69,6 +76,7 @@ class Logic:
 
     # Получает данные о постах
     def __sort_post(self, x):
+        print(str(x[0]['from_id']) + " : " + str(self.get_id()[1]))
         for i in range(len(x)):
             try:
                 if x[i]['date'] > self.__user_date:
@@ -159,70 +167,60 @@ class Logic:
                         [int(datetime.datetime.fromtimestamp(sr_time[0][3]).strftime("%H%M")), videos_rate])
                     
 
-            time_matrix()
-            matrix = self.__best_choice
-            index_max_stat_time_photo = 0
-            index_max_stat_time_video = 0
+        time_matrix()
+        matrix = self.__best_choice
+        index_max_stat_time_photo = 0
+        index_max_stat_time_video = 0
             # create graph
             # data_analys.graph_data_eng_type(self.__photos_all, self.__videos_all)
-            matrix_time = []
-            max_ph = 0
-            max_vid = 0
-            k = 0
-            time_vid = ' '
-            time_ph = ' '
-            flag_videos = False
-            flag_photos = False
-            for i in matrix:
-                if i[2] == 'photos':
-                    flag_photos = True
-                if i[2] == 'videos':
-                    flag_videos = True
-                if i[2] == 'photos' and i[1] > max_ph:
-                    max_ph = i[1]
-                    index_max_stat_time_photo = k
-                if i[2] == 'videos' and i[1] > max_vid:
-                    max_vid = i[1]
-                    index_max_stat_time_video = k
+        matrix_time = []
+        max_ph = 0
+        max_vid = 0
+        k = 0
+        flag_videos = False
+        flag_photos = False
+        for i in matrix:
+            if i[2] == 'photos':
+                flag_photos = True
+            if i[2] == 'videos':
+                flag_videos = True
+            if i[2] == 'photos' and i[1] > max_ph:
+                max_ph = i[1]
+                index_max_stat_time_photo = k
+            if i[2] == 'videos' and i[1] > max_vid:
+                max_vid = i[1]
+                index_max_stat_time_video = k
                 k += 1
 
-            if flag_photos:
-                time_ph = matrix[index_max_stat_time_photo][0][0:2] + ':00 - ' + matrix[index_max_stat_time_photo][0][
-                                                                                2:4] + ':00' + ": " + \
-                        matrix[index_max_stat_time_photo][2]
-                time_photo_post = [self.get_id()[1],matrix[index_max_stat_time_photo][0], matrix[index_max_stat_time_photo][1],
+        if flag_photos:
+            time_photo_post = [self.get_id()[1],matrix[index_max_stat_time_photo][0], matrix[index_max_stat_time_photo][1],
                                 matrix[index_max_stat_time_photo][2]]
-                matrix_time.append(time_photo_post)
-            else:
-                matrix_time.append([])
-            if flag_videos:
-                time_vid = matrix[index_max_stat_time_video][0][0:2] + ':00 - ' + matrix[index_max_stat_time_video][0][
-                                                                                2:4] + ':00' + ": " + \
-                        matrix[index_max_stat_time_video][2]
-                time_video_post = [self.get_id()[1],matrix[index_max_stat_time_video][0], matrix[index_max_stat_time_video][1],
+            matrix_time.append(time_photo_post)
+        else:
+            matrix_time.append([])
+        if flag_videos:
+            time_video_post = [self.get_id()[1],matrix[index_max_stat_time_video][0], matrix[index_max_stat_time_video][1],
                                 matrix[index_max_stat_time_video][2]]
-                matrix_time.append(time_video_post)
-            else:
-                matrix_time.append([])
+            matrix_time.append(time_video_post)
+        else:
+            matrix_time.append([])
 
-            print(time_vid, time_ph)
-            return matrix_time
+        return matrix_time
     # Возвращает массив с оценкой вовлечённости для каждого поста
     def __engagement_rate(self):
         x = self.__likes_comm_reposts
         rate = []
         subs = self.get_count_subs()
-        print(subs)
         for j in x:
             rate.append([((j[1] + j[2] + j[3]) / int(subs))])
         return rate
 
     # Анализирует данные
     def analyse_data(self):
-
+        utils = Utils()
         x = self.__sort_post(self.__get_posts())
         if(x == -1):
-            return  -1
+            return -1
         last_post_time_likes_delta = []
 
         rate_engagement = self.rate
@@ -237,29 +235,32 @@ class Logic:
                 self.__delta_date_post = self.__id_date[i][1] - self.__id_date[i + 1][1]
                 delta_rate_engagement_post = rate_engagement[i][0] - rate_engagement[i + 1][0]
                 last_post_time_likes_delta.append([self.__delta_date_post, delta_rate_engagement_post])
-        reg_analys_date_delta = Utils.regr_analys(last_post_time_likes_delta)
+        reg_analys_date_delta = utils.regr_analys(last_post_time_likes_delta)
         if sum(count_id_rate) > 0:
-            regr_analys_id = Utils.regr_analys(count_id_rate)
+            regr_analys_id = utils.regr_analys(count_id_rate)
         else:
             regr_analys_id = 0
-        reg_analys_views = Utils.regr_analys(self.__likes_views)
+        reg_analys_views = utils.regr_analys(self.__likes_views)
 
         time_ph, time_vid = self.__optimal_time_post()
+
         return reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid
 
     def print_analyse(self):
-        if(self.analyse_data() != -1):
-            reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid = self.analyse_data()
+        x = self.analyse_data()
+        print(x)
+        if(x != -1):
+            reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid = x
         else:
             return
-        print("Зависимость вовлечённости от просмотров - ", round(reg_analys_views, 2))
-        print("Зависимость вовлеченности от времени публикации между постами - ", reg_analys_date_delta)
-        print("Зависимость вовлеченности от использованных отметок ", regr_analys_id)
+        self.strVovlViews = "Зависимость вовлечённости от просмотров - " + str(round(reg_analys_views, 2))
+        self.strVovlDate = "Зависимость вовлеченности от времени публикации между постами - " + str(reg_analys_date_delta)
+        self.strVovlOtm = "Зависимость вовлеченности от использованных отметок " + str(regr_analys_id)
         if len(time_ph) != 0:
-            print("Лучшее время для поста фотографий:", str(time_ph[1])[0:2] + ':00 - ' + str(time_ph[1])[2:4] + ':00')
+            self.timeToPhoto = "Лучшее время для поста фотографий:" + str(time_ph[1])[0:2] + ':00 - ' + str(time_ph[1])[2:4] + ':00'
         else:
-            print("Фотографий за выбранный период не найдено, советую разнообразить свой контент и добавить их!")
+            self.timeToPhoto = "Фотографий за выбранный период не найдено, советую разнообразить свой контент и добавить их!"
         if len(time_vid) != 0:
-            print("Лучшее время для поста видео:"    , str(time_vid[1])[0:2] + ':00 - ' +str(time_vid[1])[2:4] + ':00')
+            self.timeToVideo = "Лучшее время для поста видео:"  + str(time_vid[1])[0:2] + ':00 - ' + str(time_vid[1])[2:4] + ':00'
         else:
-            print("Видеороликов за выбранный период не найдено, советую разнообразить свой контент и добавить их!")
+            self.timeToVideo = "Видеороликов за выбранный период не найдено, советую разнообразить свой контент и добавить их!"

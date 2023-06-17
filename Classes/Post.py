@@ -7,8 +7,8 @@ class Post:
         self.post_count = self.postObj['count']
         self.user_id = user_id
 
-    def createPost(self,attachment):
-        vk.method('messages.send', {'user_id': self.user_id, 'attachment': attachment, "random_id": 0})
+    def createPost(self,attachment, user_id):
+        vk.method('messages.send', {'user_id': user_id, 'attachment': attachment, "random_id": 0})
 
     def updatePostArr(self, offset):
         self.postObj = vk_session.method('wall.get', {'owner_id': self.user_id, 'offset': offset, 'count': 100})
