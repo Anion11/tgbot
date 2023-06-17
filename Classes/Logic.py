@@ -33,18 +33,13 @@ class Logic:
     # Возвращает количество подписчиков
     def get_count_subs(self):
         subs_type = self.get_id()
-        try:
-            if subs_type[0] == 'group':
-                response_subs = vk_session.method("groups.getMembers",{"group_id": -1 * subs_type[1]})
-                return Utils.get_count_subs_group(subs_type, response_subs)
-            if subs_type[0] == 'user':
-                response_subs = vk_session.method("users.getFollowers",{"user_id": subs_type[1]})
-                response_friend = vk_session.method("friends.get",{"user_id": subs_type[1],"fields": self.__domain})
-                return Utils.get_count_subs_user(subs_type, response_subs, response_friend)
-        except Exception as e:
-            print(e)
-            subs = int(input())
-            return subs
+        if subs_type[0] == 'group':
+            response_subs = vk_session.method("groups.getMembers",{"group_id": -1 * subs_type[1]})
+            return Utils.get_count_subs_group(subs_type, response_subs)
+        if subs_type[0] == 'user':
+            response_subs = vk_session.method("users.getFollowers",{"user_id": subs_type[1]})
+            response_friend = vk_session.method("friends.get",{"user_id": subs_type[1],"fields": self.__domain})
+            return Utils.get_count_subs_user(subs_type, response_subs, response_friend)
 
     # Возвращает массив, где выведенео количество упоминаний в посте
     def __check_count_id(self):
