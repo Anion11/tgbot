@@ -5,6 +5,7 @@ from Classes.Utils import *
 
 class Statistic:
     def __init__(self, domain, date):
+        self.sovet = None
         self.__enter_date = date
         self.__domain = domain
         self.__id_date = []
@@ -226,8 +227,22 @@ class Statistic:
         er = self.__engagement_rate()
         for post in er:
             if post[1] == id:
+                self.equal_engagement_rate(post[0])
                 return post[0]
+
     # Анализирует данные
+    def equal_engagement_rate(self, eng_coef):
+        if eng_coef > self.__average_engagement:
+            self.sovet = ("Коэффициент engagement rate выше среднего значения на странице. Это хороший результат! \n "
+                          "Пользователям понравился ваш контент. Продолжайте в том же духе!")
+        elif eng_coef < self.__average_engagement:
+            self.sovet = ("Коэффициент engagement rate ниже среднего значения на странице.\n"
+                       "Значит, пользователи не очень заинтересовались вашим контентом.\n"
+                       "Советуем попробовать что-то новое! Может быть, изменить формат или тему поста?")
+        else:
+            self.sovet = ("Коэффициент engagement rate равен среднему значению на странице.\n"
+                          "Такой результат может быть как хорошим, так и плохим.\n"
+                          "Постарайтесь прислушаться к комментариям и отзывам пользователей, чтобы улучшить свой контент в будущем.")
     def analyse_data(self):
         utils = Utils()
         if self.__flag_program:
