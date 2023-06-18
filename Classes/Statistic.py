@@ -14,6 +14,7 @@ class Statistic:
         self.__likes_views = []
         self.__best_choice = []
         self.__token = token
+        self.rate = self.__engagement_rate()
         self.__version = version
         self.__domain = domain
         self.__photos_all = []
