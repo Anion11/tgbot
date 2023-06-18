@@ -5,6 +5,8 @@ from Classes.Utils import *
 
 class Statistic:
     def __init__(self, domain, date):
+        self.time_vid = None
+        self.time_ph = None
         self.sovet = None
         self.__enter_date = date
         self.__domain = domain
@@ -280,7 +282,7 @@ class Statistic:
         reg_analys_date_delta = utils.regr_analys(last_post_time_likes_delta)
         print(3)
         sr_delta_time_post = delta_time_post // len(last_post_time_likes_delta)
-        self.time_ph, self.time_vid = 0 , 0
+        self.time_ph, self.time_vid = self.__optimal_time_post()
         return reg_analys_views, reg_analys_date_delta, regr_analys_id, self.time_ph, self.time_vid, sr_delta_time_post
 
 
