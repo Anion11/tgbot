@@ -22,7 +22,8 @@ class Statistic:
         self.__all_posts = []
         self.all_posts = self.get_posts()
         self.__flag_program = False
-        self.__sort_post(self.all_posts)
+        self.flag = self.__flag_program
+        self.__sort_post(self.__all_posts)
         self.__average_engagement = self.__average_engagement_rate()
 
 
@@ -64,6 +65,7 @@ class Statistic:
             response = vk_session.method("wall.get", {"domain": self.__domain,"count": count, "offset": offset})
             data = response['items']
             count_post += len(data)
+            print(count_post)
             if len(data) == 0:
                 break
             offset += 100
@@ -102,6 +104,7 @@ class Statistic:
                     pass
         if len(self.__id_type) <= 1:
             self.__flag_program = True
+            self.flag = True
             return
 
     def __time_matrix(self):
@@ -287,6 +290,7 @@ class Statistic:
 
 
     def print_analyse(self):
+        print("sdn")
         if self.__flag_program:
             return
         reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid, sr_delta_time_post = self.analyse_data()

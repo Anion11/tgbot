@@ -6,20 +6,24 @@ from Classes.User import User
 from settings import *
 import re
 
+
 class VkBot:
 
     def __init__(self):
         self.longpoll = longpoll
-        self._COMMANDS_USER = ["Рассчитать статистику страницы", "Вывести посты со статистикой страницы", "Работа с группой"]
-        self._COMMANDS_GROUP = ["Рассчитать статистику группы", "Вывести посты со статистикой группы", "Работа с моей страницей", "https://vk.com/"]
+        self._COMMANDS_USER = ["Рассчитать статистику страницы", "Вывести посты со статистикой страницы",
+                               "Работа с группой"]
+        self._COMMANDS_GROUP = ["Рассчитать статистику группы", "Вывести посты со статистикой группы",
+                                "Работа с моей страницей", "https://vk.com/"]
         self._COLORS = [VkKeyboardColor.POSITIVE, VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY,
                         VkKeyboardColor.SECONDARY]
         self.keyboard = self.spawnKeyboardUser()
         self.groups = Groups()
         self.user_id = None
         self.user = None
-        self.dateTimePattern = [re.compile("^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$"), re.compile("^[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{4}$"),
-                        re.compile("^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}$")]
+        self.dateTimePattern = [re.compile("^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$"),
+                                re.compile("^[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{4}$"),
+                                re.compile("^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}$")]
 
     # Метод для отправки сообщения пользователю
     def send_message(self, user_id, message, keyboard=None):
@@ -35,11 +39,13 @@ class VkBot:
     def setUserId(self, user_id):
         self.user_id = user_id
         self.user = User(user_id)
+
     def spawnKeyboardUser(self):
         keyboard = VkKeyboard()
         for i in range(len(self._COMMANDS_USER)):
             keyboard.add_button(label=self._COMMANDS_USER[i], color=self._COLORS[i])
         return keyboard
+
     def spawnKeyboardGroup(self):
         keyboard = VkKeyboard()
         for i in range(len(self._COMMANDS_GROUP) - 1):
@@ -55,16 +61,19 @@ class VkBot:
             if er_post is not None:
                 post.createPost(attachment[i], self.user_id)
                 self.send_message(self.user_id, stat.sovet)
+
     def allAnalys(self, stat):
-        result = stat.print_analyse()
-        if result != -1:
+        print("lkdsjkld")
+        stat.print_analyse()
+        if stat.flag:
+            self.send_message(self.user_id, "Слишком мало постов, невозможно рассчитать статистику")
+        else:
             self.send_message(self.user_id, stat.strVovlDate)
             self.send_message(self.user_id, stat.strVovlOtm)
             self.send_message(self.user_id, stat.strVovlViews)
             self.send_message(self.user_id, stat.timeToVideo)
             self.send_message(self.user_id, stat.timeToPhoto)
-        else:
-            self.send_message(self.user_id, "Слишком мало постов, невозможно рассчитать статистику")
+
     # Сообщение от пользователя
     def newMessage(self, request):
         try:
@@ -80,9 +89,10 @@ class VkBot:
             elif request == self._COMMANDS_USER[0] or request == self._COMMANDS_GROUP[0]:
                 self.send_message(self.user_id, "Введите начальную дату рассчета в формате дд.мм.гггг")
             elif (re.fullmatch(self.dateTimePattern[0], request) or re.fullmatch(self.dateTimePattern[1], request)
-                   or re.fullmatch(self.dateTimePattern[2], request)):
-                self.send_message(self.user_id, "Подождите немного...", self.keyboard)
+                  or re.fullmatch(self.dateTimePattern[2], request)):
+                self.send_message(self.user_id, "Подождите немного...Пошел нахуй", self.keyboard)
                 if (self.groups.have_domain):
+                    print('кошка')
                     stat = Statistic(self.groups.domain, request)
                     self.allAnalys(stat)
                 else:
