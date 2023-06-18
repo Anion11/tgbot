@@ -5,23 +5,23 @@ from Classes.Utils import *
 
 class Statistic:
     def __init__(self, domain, date):
-        self.__id_type = []
-        self.__delta_date_post = []
-        self.__id_text = []
+        self.__average_engagement = self.__average_engagement_rate()
         self.__id_date = []
         self.__likes_comm_reposts = []
+        self.__id_text = []
+        self.__delta_date_post = []
+        self.__id_type = []
         self.__likes_views = []
         self.__best_choice = []
+        self.__token = token
+        self.__version = version
         self.__domain = domain
-        self.__all_posts = []
         self.__photos_all = []
         self.__videos_all = []
+        self.__all_posts = []
         self.__enter_date = date
-        self.strVovlViews = None
-        self.strVovlDate = None
-        self.strVovlOtm = None
-        self.timeToPhoto = None
-        self.timeToVideo = None
+        self.__flag_program = False
+        self.__sort_post(self.__get_posts())
 
         # Получение id пользователя
     def get_id(self):
@@ -53,6 +53,7 @@ class Statistic:
 
     # Получаем все посты с сервера
     def __get_posts(self):
+        self.__user_date_convert_to_unix(self.__enter_date)
         offset = 0
         count = 500
         count_post = 0
@@ -68,25 +69,40 @@ class Statistic:
         self.__user_date = Utils.user_date_convert_to_unix(self.__enter_date)
         return self.__all_posts
 
+    # Конвертирует unix в datetime
+    def __user_date_convert_to_unix(self, date):
+        date = datetime.datetime.strptime(date, '%d.%m.%Y')
+        self.__user_date = date.timestamp()
+
     # Получает данные о постах
     def __sort_post(self, x):
+        k = 0
+        id_user = self.get_id()[1]
         for i in range(len(x)):
-            try:
-                if x[i]['date'] > self.__user_date:
-                    if x[i]['from_id'] == self.get_id()[1] and 'copy_history' not in x[i]:
-                        item = [x[i]['likes']['count'], x[i]['views']['count'], x[i]['comments']['count'],
-                                x[i]['reposts']['count'], x[i]['id'], x[i]['attachments'][0]['type'], x[i]['date'],
-                                x[i]['text']]
-                        self.__likes_views.append([item[0], item[1]])
-                        self.__likes_comm_reposts.append([int(item[4]), int(item[0]), int(item[2]), int(item[3])])
-                        self.__id_date.append([item[4], item[6]])
-                        self.__id_text.append([item[4], item[7]])
-                        self.__id_type.append([item[4], item[5], item[6]])
-            except:
-                break
-        if len(self.__id_date) <= 1:
-            return -1
+            if x[i]['date'] >= self.__user_date and (
+                    abs(x[i]['from_id']) == id_user and 'copy_history' not in x[i]):
+                try:
+                    item = [x[i]['likes']['count'], x[i]['views']['count'], x[i]['comments']['count'],
+                            x[i]['reposts']['count'], x[i]['id'], x[i]['attachments'][0]['type'], x[i]['date'],
+                            x[i]['text']]
+                    self.__likes_views.append([item[0], item[1]])
+                    self.__likes_comm_reposts.append([int(item[4]), int(item[0]), int(item[2]), int(item[3])])
+                    self.__id_date.append([item[4], item[6]])
+                    self.__id_text.append([item[4], item[7]])
+                    self.__id_type.append([item[4], item[5], item[6]])
+                    k += 1
+                    print("SORTED - ", i, x[i]['attachments'][0]['type'], x[i]['id'])
+                    if x[i]['attachments']:
+                        pass
+                    else:
+                        print(x[i]['id'], " - REPOST NOT SORTED")
+                except:
+                    pass
+        if len(self.__id_type) <= 1:
+            self.__flag_program = True
+            return
         self.rate = self.__engagement_rate()
+
 
     def __optimal_time_post(self):
         def time_matrix():
@@ -99,31 +115,40 @@ class Statistic:
             sr_1820 = []
             sr_2008 = []
             rate = self.rate
+            print(self.__id_type)
             for i in range(len(self.__id_type)):
-                time_post = int(datetime.datetime.fromtimestamp(self.__id_type[i][2]).strftime("%H"))
+                time_post = datetime.datetime.fromtimestamp(self.__id_type[i][2]).time()
 
-                if 8 <= time_post <= 10:
-                    sr_0810 += [['0810', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0]]]
-                if 10 < time_post <= 12:
-                    sr_1012 += [['1012', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0]]]
-                if 12 < time_post <= 14:
-                    sr_1214 += [['1214', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0]]]
-                if 14 < time_post <= 16:
-                    sr_1416 += [['1416', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0]]]
-                if 16 < time_post <= 18:
-                    sr_1618 += [['1618', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0]]]
-                if 18 < time_post <= 20:
-                    sr_1820 += [['1820', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0]]]
-                else:
-                    sr_2008 += [['2008', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0]]]
+                if datetime.time(8, 0) <= time_post <= datetime.time(10, 0):
+                    sr_0810 += [['0810', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                                 self.__likes_views[i][1]]]
+                if datetime.time(10, 0) < time_post <= datetime.time(12, 0):
+                    sr_1012 += [['1012', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                                 self.__likes_views[i][1]]]
+                if datetime.time(12, 0) < time_post <= datetime.time(14, 0):
+                    sr_1214 += [['1214', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                                 self.__likes_views[i][1]]]
+                if datetime.time(14, 0) < time_post <= datetime.time(16, 0):
+                    sr_1416 += [['1416', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                                 self.__likes_views[i][1]]]
+                if datetime.time(16, 0) < time_post <= datetime.time(18, 0):
+                    sr_1618 += [['1618', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                                 self.__likes_views[i][1]]]
+                if datetime.time(18, 0) < time_post <= datetime.time(20, 0):
+                    sr_1820 += [['1820', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                                 self.__likes_views[i][1]]]
+                if datetime.time(20, 0) < time_post <= datetime.time(23, 59) or \
+                   datetime.time(00,00) < time_post <= datetime.time(8, 00):
+                    sr_2008 += [['2008', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                                 self.__likes_views[i][1]]]
 
-            best_type(sr_0810)
-            best_type(sr_1012)
-            best_type(sr_1214)
-            best_type(sr_1416)
-            best_type(sr_1618)
-            best_type(sr_1820)
-            best_type(sr_2008)
+                best_type(sr_0810)
+                best_type(sr_1012)
+                best_type(sr_1214)
+                best_type(sr_1416)
+                best_type(sr_1618)
+                best_type(sr_1820)
+                best_type(sr_2008)
 
         def best_type(sr_time):
             photos = []
@@ -131,11 +156,6 @@ class Statistic:
             photos_rate = 0
             videos_rate = 0
             if len(sr_time) != 0:
-                for i in range(len(sr_time)):
-                    if sr_time[i][2] == 'photo' or sr_time[i][2] == 'album':
-                        photos.append(sr_time[i][4])
-                    if sr_time[i][2] == 'video':
-                        videos.append(sr_time[i][4])
                 if len(photos) != 0:
                     photos_rate = sum(photos) / int(len(photos))
                 if len(videos) != 0:
@@ -151,14 +171,11 @@ class Statistic:
                 if sr_time[0][2] == 'video':
                     self.__videos_all.append(
                         [int(datetime.datetime.fromtimestamp(sr_time[0][3]).strftime("%H%M")), videos_rate])
-                    
 
         time_matrix()
         matrix = self.__best_choice
         index_max_stat_time_photo = 0
         index_max_stat_time_video = 0
-            # create graph
-            # data_analys.graph_data_eng_type(self.__photos_all, self.__videos_all)
         matrix_time = []
         max_ph = 0
         max_vid = 0
@@ -176,68 +193,74 @@ class Statistic:
             if i[2] == 'videos' and i[1] > max_vid:
                 max_vid = i[1]
                 index_max_stat_time_video = k
-                k += 1
+            k += 1
 
         if flag_photos:
-            time_photo_post = [self.get_id()[1],matrix[index_max_stat_time_photo][0], matrix[index_max_stat_time_photo][1],
-                                matrix[index_max_stat_time_photo][2]]
+            time_photo_post = [self.get_id()[1], matrix[index_max_stat_time_photo][0],
+                               matrix[index_max_stat_time_photo][1],
+                               matrix[index_max_stat_time_photo][2]]
             matrix_time.append(time_photo_post)
         else:
             matrix_time.append([])
         if flag_videos:
-            time_video_post = [self.get_id()[1],matrix[index_max_stat_time_video][0], matrix[index_max_stat_time_video][1],
-                                matrix[index_max_stat_time_video][2]]
+            time_video_post = [self.get_id()[1], matrix[index_max_stat_time_video][0],
+                               matrix[index_max_stat_time_video][1],
+                               matrix[index_max_stat_time_video][2]]
             matrix_time.append(time_video_post)
         else:
             matrix_time.append([])
-
         return matrix_time
+
     # Возвращает массив с оценкой вовлечённости для каждого поста
     def __engagement_rate(self):
         x = self.__likes_comm_reposts
         rate = []
         subs = self.get_count_subs()
         for j in x:
-            rate.append([((j[1] + j[2] + j[3]) / int(subs))])
+            rate.append([((j[1] + j[2] + j[3]) / int(subs)), j[0]])
         return rate
+
+    def __average_engagement_rate(self):
+        all_engagement = [x[0] for x in self.rate]
+        return sum(all_engagement)/len(all_engagement)
+
+    def check_engagement_rate_post(self, id):
+        return self.rate[self.rate.index(id)]
 
     # Анализирует данные
     def analyse_data(self):
         utils = Utils()
-        x = self.__sort_post(self.__get_posts())
-        if(x == -1):
-            return -1
-        last_post_time_likes_delta = []
-
+        if self.__flag_program:
+            return
         rate_engagement = self.rate
-
         count_id = self.__check_count_id()
+        last_post_time_likes_delta = []
         count_id_rate = []
-
+        delta_time_post = 0
         if sum(count_id_rate) > 0:
             for i in range(len(count_id)):
                 count_id_rate.append([count_id[i], rate_engagement[i][0]])
-        for i in range(len(self.__id_date) // 2 - 1):
-                self.__delta_date_post = self.__id_date[i][1] - self.__id_date[i + 1][1]
-                delta_rate_engagement_post = rate_engagement[i][0] - rate_engagement[i + 1][0]
-                last_post_time_likes_delta.append([self.__delta_date_post, delta_rate_engagement_post])
-        reg_analys_date_delta = utils.regr_analys(last_post_time_likes_delta)
+        for i in range(len(self.__id_date) // 2 + 1):
+            self.__delta_date_post = self.__id_date[i][1] - self.__id_date[i + 1][1]
+            delta_rate_engagement_post = rate_engagement[i][0] - rate_engagement[i + 1][0]
+            last_post_time_likes_delta.append([self.__delta_date_post, delta_rate_engagement_post])
+            delta_time_post += self.__delta_date_post
         if sum(count_id_rate) > 0:
-            regr_analys_id = utils.regr_analys(count_id_rate)
+            regr_analys_id = Utils.regr_analys(count_id_rate)
         else:
             regr_analys_id = 0
-        reg_analys_views = utils.regr_analys(self.__likes_views)
+        reg_analys_views = Utils.regr_analys(self.__likes_views)
+        reg_analys_date_delta = Utils.regr_analys(last_post_time_likes_delta)
+        sr_delta_time_post = delta_time_post // len(last_post_time_likes_delta)
+        self.time_ph, self.time_vid = self.__optimal_time_post()
+        return reg_analys_views, reg_analys_date_delta, regr_analys_id, self.time_ph, self.time_vid, sr_delta_time_post
 
-        time_ph, time_vid = self.__optimal_time_post()
 
-        return reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid
+def print_analyse(self):
+        if self.__flag_program:
+            return
+        reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid, sr_delta_time_post = self.analyse_data()
 
-    def print_analyse(self):
-        x = self.analyse_data()
-        if(x != -1):
-            reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid = x
-        else:
-            return -1
         self.strVovlViews = "Зависимость вовлечённости от просмотров - " + str(round(reg_analys_views, 2))
         self.strVovlDate = "Зависимость вовлеченности от времени публикации между постами - " + str(reg_analys_date_delta)
         self.strVovlOtm = "Зависимость вовлеченности от использованных отметок " + str(regr_analys_id)

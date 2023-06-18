@@ -39,7 +39,9 @@ class Utils:
         return date.timestamp()
     def get_count_subs_group(subs_type, response_subs):
         return response_subs['count']
+
     def get_count_subs_user(subs_type, response_subs, response_friend):
+        sub = 0
         if response_subs is not None:
             sub = response_subs['count']
         friend = response_friend['count']
