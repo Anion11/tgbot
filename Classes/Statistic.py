@@ -23,8 +23,7 @@ class Statistic:
         self.all_posts = self.get_posts()
         self.__flag_program = False
         self.flag = self.__flag_program
-        self.__sort_post(self.__all_posts)
-        self.__average_engagement = self.__average_engagement_rate()
+        self.__sort_post(self.get_posts())
 
 
         # Получение id пользователя
@@ -58,6 +57,8 @@ class Statistic:
     # Получаем все посты с сервера
     def get_posts(self):
         self.__user_date_convert_to_unix(self.__enter_date)
+        self.__all_posts = []
+        self.all_posts = []
         offset = 0
         count = 100
         count_post = 0
@@ -240,15 +241,15 @@ class Statistic:
         for post in er:
             if post[1] == id:
                 self.equal_engagement_rate(post[0])
-                print(post[0], self.__average_engagement)
+                print(post[0], self.__average_engagement_rate)
                 return post[0]
 
     # Анализирует данные
     def equal_engagement_rate(self, eng_coef):
-        if eng_coef > self.__average_engagement:
+        if eng_coef > self.__average_engagement_rate():
             self.sovet = ("Коэффициент engagement rate выше среднего значения на странице. Это хороший результат! \n "
                           "Пользователям понравился ваш контент. Продолжайте в том же духе!")
-        elif eng_coef < self.__average_engagement:
+        elif eng_coef < self.__average_engagement_rate():
             self.sovet = ("Коэффициент engagement rate ниже среднего значения на странице.\n"
                        "Значит, пользователи не очень заинтересовались вашим контентом.\n"
                        "Советуем попробовать что-то новое! Может быть, изменить формат или тему поста?")
@@ -257,7 +258,9 @@ class Statistic:
                           "Такой результат может быть как хорошим, так и плохим.\n"
                           "Постарайтесь прислушаться к комментариям и отзывам пользователей, чтобы улучшить свой контент в будущем.")
     def analyse_data(self):
+        print("work analyse_date")
         utils = Utils()
+        print("import utils")
         if self.__flag_program:
             print("хуесось")
             return
