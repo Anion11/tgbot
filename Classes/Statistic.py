@@ -102,81 +102,89 @@ class Statistic:
             self.__flag_program = True
             return
 
+    def __time_matrix(self):
+        self.__best_choice = []
+        sr_0810 = []
+        sr_1012 = []
+        sr_1214 = []
+        sr_1416 = []
+        sr_1618 = []
+        sr_1820 = []
+        sr_2008 = []
+        rate = self.rate
+        print(self.__id_type)
+        for i in range(len(self.__id_type)):
+            time_post = datetime.datetime.fromtimestamp(self.__id_type[i][2]).time()
 
+            if datetime.time(8, 0) <= time_post <= datetime.time(10, 0):
+                sr_0810 += [['0810', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                             self.__likes_views[i][1]]]
+            if datetime.time(10, 0) < time_post <= datetime.time(12, 0):
+                sr_1012 += [['1012', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                             self.__likes_views[i][1]]]
+            if datetime.time(12, 0) < time_post <= datetime.time(14, 0):
+                sr_1214 += [['1214', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                             self.__likes_views[i][1]]]
+            if datetime.time(14, 0) < time_post <= datetime.time(16, 0):
+                sr_1416 += [['1416', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                             self.__likes_views[i][1]]]
+            if datetime.time(16, 0) < time_post <= datetime.time(18, 0):
+                sr_1618 += [['1618', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                             self.__likes_views[i][1]]]
+            if datetime.time(18, 0) < time_post <= datetime.time(20, 0):
+                sr_1820 += [['1820', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                             self.__likes_views[i][1]]]
+            if datetime.time(20, 0) < time_post <= datetime.time(23, 59) or datetime.time(00,
+                                                                                          00) < time_post <= datetime.time(
+                    8, 00):
+                sr_2008 += [['2008', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
+                             self.__likes_views[i][1]]]
+            else:
+                pass
+        self.__best_type(sr_0810)
+        self.__best_type(sr_1012)
+        self.__best_type(sr_1214)
+        self.__best_type(sr_1416)
+        self.__best_type(sr_1618)
+        self.__best_type(sr_1820)
+        self.__best_type(sr_2008)
+
+    def __best_type(self, sr_time):
+        photos = []
+        videos = []
+        photos_rate = 0
+        videos_rate = 0
+        if len(sr_time) != 0:
+            for i in range(len(sr_time)):
+                if sr_time[i][2] == 'photo' or sr_time[i][2] == 'album':
+                    photos.append(sr_time[i][4])
+                    self.__photos_train.append(
+                        [1, sr_time[i][5], int(datetime.datetime.fromtimestamp(sr_time[i][3]).strftime("%H")),
+                         sr_time[i][4], sr_time[i][3]])
+                if sr_time[i][2] == 'video' or sr_time[i][2] == 'poll':
+                    videos.append(sr_time[i][4])
+                    self.__videos_train.append(
+                        [2, sr_time[i][5], int(datetime.datetime.fromtimestamp(sr_time[i][3]).strftime("%H")),
+                         sr_time[i][4], sr_time[i][3]])
+            if len(photos) != 0:
+                photos_rate = sum(photos) / int(len(photos))
+            if len(videos) != 0:
+                videos_rate = sum(videos) / int(len(videos))
+            if photos_rate > videos_rate:
+                self.__best_choice.append([sr_time[0][0], photos_rate, 'photos'])
+            if photos_rate < videos_rate:
+                self.__best_choice.append([sr_time[0][0], videos_rate, 'videos'])
+
+            if sr_time[0][2] == 'photo':
+                self.__photos_all.append(
+                    [int(datetime.datetime.fromtimestamp(sr_time[0][3]).strftime("%H%M")), photos_rate])
+            if sr_time[0][2] == 'video':
+                self.__videos_all.append(
+                    [int(datetime.datetime.fromtimestamp(sr_time[0][3]).strftime("%H%M")), videos_rate])
+
+    # Вычисление оптимального времени постинга для фото и видео и возвращает массив
     def __optimal_time_post(self):
-        def time_matrix():
-            self.__best_choice = []
-            sr_0810 = []
-            sr_1012 = []
-            sr_1214 = []
-            sr_1416 = []
-            sr_1618 = []
-            sr_1820 = []
-            sr_2008 = []
-            rate = self.__engagement_rate()
-            for i in range(len(self.__id_type)):
-                time_post = datetime.datetime.fromtimestamp(self.__id_type[i][2]).time()
-
-                if datetime.time(8, 0) <= time_post <= datetime.time(10, 0):
-                    sr_0810 += [['0810', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
-                                 self.__likes_views[i][1]]]
-                if datetime.time(10, 0) < time_post <= datetime.time(12, 0):
-                    sr_1012 += [['1012', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
-                                 self.__likes_views[i][1]]]
-                if datetime.time(12, 0) < time_post <= datetime.time(14, 0):
-                    sr_1214 += [['1214', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
-                                 self.__likes_views[i][1]]]
-                if datetime.time(14, 0) < time_post <= datetime.time(16, 0):
-                    sr_1416 += [['1416', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
-                                 self.__likes_views[i][1]]]
-                if datetime.time(16, 0) < time_post <= datetime.time(18, 0):
-                    sr_1618 += [['1618', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
-                                 self.__likes_views[i][1]]]
-                if datetime.time(18, 0) < time_post <= datetime.time(20, 0):
-                    sr_1820 += [['1820', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
-                                 self.__likes_views[i][1]]]
-                if datetime.time(20, 0) < time_post <= datetime.time(23, 59) or \
-                   datetime.time(00,00) < time_post <= datetime.time(8, 00):
-                    sr_2008 += [['2008', self.__id_type[i][0], self.__id_type[i][1], self.__id_type[i][2], rate[i][0],
-                                 self.__likes_views[i][1]]]
-
-                best_type(sr_0810)
-                best_type(sr_1012)
-                best_type(sr_1214)
-                best_type(sr_1416)
-                best_type(sr_1618)
-                best_type(sr_1820)
-                best_type(sr_2008)
-
-        def best_type(sr_time):
-            photos = []
-            videos = []
-            photos_rate = 0
-            videos_rate = 0
-            if len(sr_time) != 0:
-                if len(sr_time) != 0:
-                    for i in range(len(sr_time)):
-                        if sr_time[i][2] == 'photo' or sr_time[i][2] == 'album':
-                            photos.append(sr_time[i][4])
-                        if sr_time[i][2] == 'video' or sr_time[i][2] == 'poll':
-                            videos.append(sr_time[i][4])
-                if len(photos) != 0:
-                    photos_rate = sum(photos) / int(len(photos))
-                if len(videos) != 0:
-                    videos_rate = sum(videos) / int(len(videos))
-                if photos_rate > videos_rate:
-                    self.__best_choice.append([sr_time[0][0], photos_rate, 'photos'])
-                if photos_rate < videos_rate:
-                    self.__best_choice.append([sr_time[0][0], videos_rate, 'videos'])
-
-                if sr_time[0][2] == 'photo':
-                    self.__photos_all.append(
-                        [int(datetime.datetime.fromtimestamp(sr_time[0][3]).strftime("%H%M")), photos_rate])
-                if sr_time[0][2] == 'video':
-                    self.__videos_all.append(
-                        [int(datetime.datetime.fromtimestamp(sr_time[0][3]).strftime("%H%M")), videos_rate])
-
-        time_matrix()
+        self.__time_matrix()
         matrix = self.__best_choice
         index_max_stat_time_photo = 0
         index_max_stat_time_video = 0
@@ -186,16 +194,15 @@ class Statistic:
         k = 0
         flag_videos = False
         flag_photos = False
-        print(matrix)
         for i in matrix:
-            if i[2] == 'photos' or i[2] == 'album':
+            if i[2] == 'photos':
                 flag_photos = True
-            if i[2] == 'videos' or i[2] == 'poll':
+            if i[2] == 'videos':
                 flag_videos = True
-            if (i[2] == 'photos' or i[2] == 'album') and i[1] > max_ph:
+            if i[2] == 'photos' and i[1] > max_ph:
                 max_ph = i[1]
                 index_max_stat_time_photo = k
-            if (i[2] == 'videos' or i[2] == 'poll') and i[1] > max_vid:
+            if i[2] == 'videos' and i[1] > max_vid:
                 max_vid = i[1]
                 index_max_stat_time_video = k
             k += 1
