@@ -228,6 +228,7 @@ class Statistic:
         for post in er:
             if post[1] == id:
                 self.equal_engagement_rate(post[0])
+                print(post[0], self.__average_engagement)
                 return post[0]
 
     # Анализирует данные
