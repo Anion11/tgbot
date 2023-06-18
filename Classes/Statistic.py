@@ -114,7 +114,6 @@ class Statistic:
             sr_1820 = []
             sr_2008 = []
             rate = self.__engagement_rate()
-            print(self.__id_type)
             for i in range(len(self.__id_type)):
                 time_post = datetime.datetime.fromtimestamp(self.__id_type[i][2]).time()
 
@@ -181,6 +180,7 @@ class Statistic:
         k = 0
         flag_videos = False
         flag_photos = False
+        print(matrix)
         for i in matrix:
             if i[2] == 'photos' or i[2] == 'album':
                 flag_photos = True
