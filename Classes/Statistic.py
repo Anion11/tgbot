@@ -154,6 +154,12 @@ class Statistic:
             photos_rate = 0
             videos_rate = 0
             if len(sr_time) != 0:
+                if len(sr_time) != 0:
+                    for i in range(len(sr_time)):
+                        if sr_time[i][2] == 'photo' or sr_time[i][2] == 'album':
+                            photos.append(sr_time[i][4])
+                        if sr_time[i][2] == 'video' or sr_time[i][2] == 'poll':
+                            videos.append(sr_time[i][4])
                 if len(photos) != 0:
                     photos_rate = sum(photos) / int(len(photos))
                 if len(videos) != 0:
