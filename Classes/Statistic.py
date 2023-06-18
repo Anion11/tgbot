@@ -111,7 +111,7 @@ class Statistic:
         sr_1618 = []
         sr_1820 = []
         sr_2008 = []
-        rate = self.rate
+        rate = self.__engagement_rate()
         print(self.__id_type)
         for i in range(len(self.__id_type)):
             time_post = datetime.datetime.fromtimestamp(self.__id_type[i][2]).time()
@@ -158,14 +158,8 @@ class Statistic:
             for i in range(len(sr_time)):
                 if sr_time[i][2] == 'photo' or sr_time[i][2] == 'album':
                     photos.append(sr_time[i][4])
-                    self.__photos_train.append(
-                        [1, sr_time[i][5], int(datetime.datetime.fromtimestamp(sr_time[i][3]).strftime("%H")),
-                         sr_time[i][4], sr_time[i][3]])
                 if sr_time[i][2] == 'video' or sr_time[i][2] == 'poll':
                     videos.append(sr_time[i][4])
-                    self.__videos_train.append(
-                        [2, sr_time[i][5], int(datetime.datetime.fromtimestamp(sr_time[i][3]).strftime("%H")),
-                         sr_time[i][4], sr_time[i][3]])
             if len(photos) != 0:
                 photos_rate = sum(photos) / int(len(photos))
             if len(videos) != 0:
