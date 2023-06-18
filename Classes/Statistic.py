@@ -18,8 +18,9 @@ class Statistic:
         self.__photos_all = []
         self.__videos_all = []
         self.__all_posts = []
+        self.all_posts = self.get_posts()
         self.__flag_program = False
-        self.__sort_post(self.__get_posts())
+        self.__sort_post(self.all_posts)
         self.__average_engagement = self.__average_engagement_rate()
 
 
@@ -52,20 +53,19 @@ class Statistic:
         return count_id
 
     # Получаем все посты с сервера
-    def __get_posts(self):
+    def get_posts(self):
         self.__user_date_convert_to_unix(self.__enter_date)
         offset = 0
-        count = 500
+        count = 100
         count_post = 0
         while offset < 500:
-            response = vk_session.method("wall.get",{"domain": self.__domain,"count": count, "offset": offset})
+            response = vk_session.method("wall.get", {"domain": self.__domain,"count": count, "offset": offset})
             data = response['items']
+            count_post += len(data)
             if len(data) == 0:
                 break
-            count_post += len(data)
             offset += 100
             self.__all_posts.extend(data)
-        
         self.__user_date = Utils.user_date_convert_to_unix(self.__enter_date)
         return self.__all_posts
 
@@ -77,7 +77,7 @@ class Statistic:
     # Получает данные о постах
     def __sort_post(self, x):
         k = 0
-        id_user = self.get_id()[1]
+        id_user = -1 * self.get_id()[1]
         for i in range(len(x)):
             if x[i]['date'] >= self.__user_date and (
                     abs(x[i]['from_id']) == id_user and 'copy_history' not in x[i]):
@@ -262,11 +262,11 @@ class Statistic:
             last_post_time_likes_delta.append([self.__delta_date_post, delta_rate_engagement_post])
             delta_time_post += self.__delta_date_post
         if sum(count_id_rate) > 0:
-            regr_analys_id = Utils.regr_analys(count_id_rate)
+            regr_analys_id = utils.regr_analys(count_id_rate)
         else:
             regr_analys_id = 0
-        reg_analys_views = Utils.regr_analys(self.__likes_views)
-        reg_analys_date_delta = Utils.regr_analys(last_post_time_likes_delta)
+        reg_analys_views = utils.regr_analys(self.__likes_views)
+        reg_analys_date_delta = utils.regr_analys(last_post_time_likes_delta)
         sr_delta_time_post = delta_time_post // len(last_post_time_likes_delta)
         self.time_ph, self.time_vid = self.__optimal_time_post()
         return reg_analys_views, reg_analys_date_delta, regr_analys_id, self.time_ph, self.time_vid, sr_delta_time_post

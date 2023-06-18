@@ -46,15 +46,15 @@ class VkBot:
             keyboard.add_button(label=self._COMMANDS_GROUP[i], color=self._COLORS[i])
         return keyboard
 
-    def postMsg(self, user):
-        post = Post(user)
-        stat = Statistic(self.user.user_domain, "01.01.2000")
-        attachment = post.checkPostsUser()
+    def postMsg(self, id, domain):
+        post = Post(id)
+        stat = Statistic(domain, "01.01.2000")
+        attachment = post.checkPostsUser(stat.all_posts)
         for i in range(0, len(attachment)):
-            er_post = stat.check_engagement_rate_post(post.postObj['items'][i]['id'])
+            er_post = stat.check_engagement_rate_post(stat.all_posts[i]['id'])
             if er_post is not None:
                 post.createPost(attachment[i], self.user_id)
-                self.send_message(self.user_id, str(er_post))
+                self.send_message(self.user_id, stat.sovet)
     def allAnalys(self, stat):
         result = stat.print_analyse()
         if result != -1:
@@ -70,11 +70,11 @@ class VkBot:
         try:
             if request == self._COMMANDS_USER[1]:
                 self.send_message(self.user_id, "Подождите немного...", self.keyboard)
-                self.postMsg(self.user_id)
+                self.postMsg(self.user_id, self.user.user_domain)
             elif request == self._COMMANDS_GROUP[1]:
                 if (self.groups.have_domain):
                     self.send_message(self.user_id, "Подождите немного...", self.keyboard)
-                    self.postMsg(self.groups.group_id)
+                    self.postMsg(self.groups.group_id, self.groups.domain)
                 else:
                     self.send_message(self.user_id, "Пришлите ссылку на вашу группу", self.keyboard)
             elif request == self._COMMANDS_USER[0] or request == self._COMMANDS_GROUP[0]:
