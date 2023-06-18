@@ -182,14 +182,14 @@ class Statistic:
         flag_videos = False
         flag_photos = False
         for i in matrix:
-            if i[2] == 'photos':
+            if i[2] == 'photos' or i[2] == 'album':
                 flag_photos = True
-            if i[2] == 'videos':
+            if i[2] == 'videos' or i[2] == 'poll':
                 flag_videos = True
-            if i[2] == 'photos' and i[1] > max_ph:
+            if (i[2] == 'photos' or i[2] == 'album') and i[1] > max_ph:
                 max_ph = i[1]
                 index_max_stat_time_photo = k
-            if i[2] == 'videos' and i[1] > max_vid:
+            if (i[2] == 'videos' or i[2] == 'poll') and i[1] > max_vid:
                 max_vid = i[1]
                 index_max_stat_time_video = k
             k += 1
