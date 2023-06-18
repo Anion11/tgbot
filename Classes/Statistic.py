@@ -5,7 +5,8 @@ from Classes.Utils import *
 
 class Statistic:
     def __init__(self, domain, date):
-        self.__average_engagement = self.__average_engagement_rate()
+        self.__enter_date = date
+        self.__domain = domain
         self.__id_date = []
         self.__likes_comm_reposts = []
         self.__id_text = []
@@ -13,16 +14,13 @@ class Statistic:
         self.__id_type = []
         self.__likes_views = []
         self.__best_choice = []
-        self.__token = token
-        self.rate = self.__engagement_rate()
-        self.__version = version
-        self.__domain = domain
         self.__photos_all = []
         self.__videos_all = []
         self.__all_posts = []
-        self.__enter_date = date
         self.__flag_program = False
         self.__sort_post(self.__get_posts())
+        self.__average_engagement = self.__average_engagement_rate()
+
 
         # Получение id пользователя
     def get_id(self):
@@ -102,7 +100,6 @@ class Statistic:
         if len(self.__id_type) <= 1:
             self.__flag_program = True
             return
-        self.rate = self.__engagement_rate()
 
 
     def __optimal_time_post(self):
@@ -115,7 +112,7 @@ class Statistic:
             sr_1618 = []
             sr_1820 = []
             sr_2008 = []
-            rate = self.rate
+            rate = self.__engagement_rate()
             print(self.__id_type)
             for i in range(len(self.__id_type)):
                 time_post = datetime.datetime.fromtimestamp(self.__id_type[i][2]).time()
@@ -222,18 +219,20 @@ class Statistic:
         return rate
 
     def __average_engagement_rate(self):
-        all_engagement = [x[0] for x in self.rate]
+        all_engagement = [x[0] for x in self.__engagement_rate()]
         return sum(all_engagement)/len(all_engagement)
 
     def check_engagement_rate_post(self, id):
-        return self.rate[self.rate.index(id)]
-
+        er = self.__engagement_rate()
+        for post in er:
+            if post[1] == id:
+                return post[0]
     # Анализирует данные
     def analyse_data(self):
         utils = Utils()
         if self.__flag_program:
             return
-        rate_engagement = self.rate
+        rate_engagement = self.__engagement_rate()
         count_id = self.__check_count_id()
         last_post_time_likes_delta = []
         count_id_rate = []

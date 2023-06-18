@@ -50,11 +50,11 @@ class VkBot:
         post = Post(user)
         stat = Statistic(self.user.user_domain, "01.01.2000")
         attachment = post.checkPostsUser()
-        likes = post.checkLikesUser()
         for i in range(0, len(attachment)):
-            post.createPost(attachment[i],self.user_id)
             er_post = stat.check_engagement_rate_post(post.postObj['items'][i]['id'])
-            self.send_message(self.user_id, str(er_post))
+            if er_post is not None:
+                post.createPost(attachment[i], self.user_id)
+                self.send_message(self.user_id, str(er_post))
     def allAnalys(self, stat):
         result = stat.print_analyse()
         if result != -1:
