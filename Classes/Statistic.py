@@ -275,7 +275,7 @@ class Statistic:
         reg_analys_views = utils.regr_analys(self.__likes_views)
         reg_analys_date_delta = utils.regr_analys(last_post_time_likes_delta)
         sr_delta_time_post = delta_time_post // len(last_post_time_likes_delta)
-        self.time_ph, self.time_vid = self.__optimal_time_post()
+        self.time_ph, self.time_vid = 0 , 0
         return reg_analys_views, reg_analys_date_delta, regr_analys_id, self.time_ph, self.time_vid, sr_delta_time_post
 
 
