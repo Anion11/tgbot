@@ -257,7 +257,7 @@ class Statistic:
         return reg_analys_views, reg_analys_date_delta, regr_analys_id, self.time_ph, self.time_vid, sr_delta_time_post
 
 
-def print_analyse(self):
+    def print_analyse(self):
         if self.__flag_program:
             return
         reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid, sr_delta_time_post = self.analyse_data()
