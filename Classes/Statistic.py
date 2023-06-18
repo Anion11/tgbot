@@ -13,14 +13,14 @@ class Statistic:
         self.__id_date = []
         self.__likes_comm_reposts = []
         self.__id_text = []
-        self.__delta_date_post = []
+        self.__delta_date_post = 0
         self.__id_type = []
         self.__likes_views = []
         self.__best_choice = []
         self.__photos_all = []
         self.__videos_all = []
         self.__all_posts = []
-        self.all_posts = self.get_posts()
+        self.all_posts = []
         self.__flag_program = False
         self.flag = self.__flag_program
         self.__sort_post(self.get_posts())
@@ -57,8 +57,6 @@ class Statistic:
     # Получаем все посты с сервера
     def get_posts(self):
         self.__user_date_convert_to_unix(self.__enter_date)
-        self.__all_posts = []
-        self.all_posts = []
         offset = 0
         count = 100
         count_post = 0
@@ -71,6 +69,7 @@ class Statistic:
                 break
             offset += 100
             self.__all_posts.extend(data)
+            self.all_posts.extend(data)
         self.__user_date = Utils.user_date_convert_to_unix(self.__enter_date)
         return self.__all_posts
 
@@ -82,7 +81,7 @@ class Statistic:
     # Получает данные о постах
     def __sort_post(self, x):
         k = 0
-        id_user = -1 * self.get_id()[1]
+        id_user = abs(-1 * self.get_id()[1])
         for i in range(len(x)):
             if x[i]['date'] >= self.__user_date and (
                     abs(x[i]['from_id']) == id_user and 'copy_history' not in x[i]):
@@ -118,7 +117,6 @@ class Statistic:
         sr_1820 = []
         sr_2008 = []
         rate = self.__engagement_rate()
-        print(self.__id_type)
         for i in range(len(self.__id_type)):
             time_post = datetime.datetime.fromtimestamp(self.__id_type[i][2]).time()
 
@@ -241,7 +239,6 @@ class Statistic:
         for post in er:
             if post[1] == id:
                 self.equal_engagement_rate(post[0])
-                print(post[0], self.__average_engagement_rate)
                 return post[0]
 
     # Анализирует данные
@@ -258,42 +255,30 @@ class Statistic:
                           "Такой результат может быть как хорошим, так и плохим.\n"
                           "Постарайтесь прислушаться к комментариям и отзывам пользователей, чтобы улучшить свой контент в будущем.")
     def analyse_data(self):
-        print("work analyse_date")
         utils = Utils()
-        print("import utils")
         if self.__flag_program:
-            print("хуесось")
             return
         rate_engagement = self.__engagement_rate()
         count_id = self.__check_count_id()
         last_post_time_likes_delta = []
         count_id_rate = []
         delta_time_post = 0
-        print(000)
-        if sum(count_id) > 0:
-            for i in range(len(count_id)):
-                count_id_rate.append([count_id[i], rate_engagement[i][0]])
+        for i in range(len(count_id)):
+            count_id_rate.append([count_id[i], rate_engagement[i][0]])
         for i in range(len(self.__id_date) // 2 + 1):
             self.__delta_date_post = self.__id_date[i][1] - self.__id_date[i + 1][1]
             delta_rate_engagement_post = rate_engagement[i][0] - rate_engagement[i + 1][0]
             last_post_time_likes_delta.append([self.__delta_date_post, delta_rate_engagement_post])
             delta_time_post += self.__delta_date_post
-        if sum(count_id_rate) > 0:
-            regr_analys_id = utils.regr_analys(count_id_rate)
-        else:
-            regr_analys_id = 0
-        print(1)
+        regr_analys_id = 0
         reg_analys_views = utils.regr_analys(self.__likes_views)
-        print(2)
         reg_analys_date_delta = utils.regr_analys(last_post_time_likes_delta)
-        print(3)
         sr_delta_time_post = delta_time_post // len(last_post_time_likes_delta)
         self.time_ph, self.time_vid = self.__optimal_time_post()
         return reg_analys_views, reg_analys_date_delta, regr_analys_id, self.time_ph, self.time_vid, sr_delta_time_post
 
 
     def print_analyse(self):
-        print("sdn")
         if self.__flag_program:
             return
         reg_analys_views, reg_analys_date_delta, regr_analys_id, time_ph, time_vid, sr_delta_time_post = self.analyse_data()

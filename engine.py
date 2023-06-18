@@ -63,7 +63,6 @@ class VkBot:
                 self.send_message(self.user_id, stat.sovet)
 
     def allAnalys(self, stat):
-        print("lkdsjkld")
         stat.print_analyse()
         if stat.flag:
             self.send_message(self.user_id, "Слишком мало постов, невозможно рассчитать статистику")
@@ -90,9 +89,8 @@ class VkBot:
                 self.send_message(self.user_id, "Введите начальную дату рассчета в формате дд.мм.гггг")
             elif (re.fullmatch(self.dateTimePattern[0], request) or re.fullmatch(self.dateTimePattern[1], request)
                   or re.fullmatch(self.dateTimePattern[2], request)):
-                self.send_message(self.user_id, "Подождите немного...Пошел нахуй", self.keyboard)
+                self.send_message(self.user_id, "Подождите немного...", self.keyboard)
                 if (self.groups.have_domain):
-                    print('кошка')
                     stat = Statistic(self.groups.domain, request)
                     self.allAnalys(stat)
                 else:
